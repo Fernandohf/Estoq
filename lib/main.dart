@@ -24,6 +24,23 @@ var sessions_content = [
   'Session1'
 ];
 
+class SessionDataEntry {
+  String barCode;
+  int quantity;
+
+  SessionDataEntry({this.barCode, this.quantity});
+
+  // TODO Widget _getListTile()
+}
+
+// StorageClass
+class SessionData {
+  String name;
+  List<SessionDataEntry> entries = [];
+  Key key = UniqueKey();
+  SessionData({this.name, this.entries});
+}
+
 // Constants
 const _savepath = 'estoq/sessions';
 
@@ -55,17 +72,23 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+List<SessionData> _loadStoredData()
+{
+  for ()
+}
+
+// TODO fix for new patterns
 Widget _buildSessions() {
   return ListView.builder(
     itemBuilder: (BuildContext context, int index) =>
-        SessionItem(sessions_names[index], sessions_content[index]),
+        SessionTileItem(SessionData()),
     itemCount: sessions_names.length,
   );
 }
 
 // Session edit screen
 
-void _navigateToSession(BuildContext context, name, content) {
+void _navigateToSession(BuildContext context, sessionData) {
   if (Navigator.of(context).canPop()) {
     Navigator.of(context).pop();
   }
@@ -75,7 +98,7 @@ void _navigateToSession(BuildContext context, name, content) {
       appBar: AppBar(
         elevation: 1,
         title: Text(
-          name,
+          sessionData.name,
           style: TextStyle(
             fontSize: 25,
             color: Colors.white,
@@ -84,24 +107,20 @@ void _navigateToSession(BuildContext context, name, content) {
         // centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
-      body: SessionView(name, content),
+      body: SessionView(sessionData),
     );
   }));
 }
 
-void _navigateToActiveSession(BuildContext context, name, content) {
-  if (Navigator.of(context).canPop()) {
-    Navigator.of(context).pop();
-  }
+void _navigateToActiveSession(BuildContext context, sessionData) {
   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-    return ActiveSessionScreen(name, content);
+    return ActiveSessionScreen(sessionData);
   }));
 }
 
 class SessionView extends StatelessWidget {
-  final String name;
-  final String content;
-  SessionView(this.name, this.content);
+  final SessionData sessionData;
+  SessionView(this.sessionData);
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -131,7 +150,7 @@ class SessionView extends StatelessWidget {
                             child: ListView(children: <Widget>[
                               Container(
                                 child: Text(
-                                  content,
+                                  sessionData.entries.toString(),
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                       color: Colors.black, fontSize: 16),
@@ -165,7 +184,7 @@ class SessionView extends StatelessWidget {
               ),
               FlatButton(
                 onPressed: () {
-                  _navigateToActiveSession(context, name, content);
+                  _navigateToActiveSession(context, sessionData);
                 }, // append to entry
                 child: Icon(Icons.add_circle, color: Colors.blueAccent),
               ),
@@ -178,54 +197,66 @@ class SessionView extends StatelessWidget {
 }
 
 class ActiveSessionScreen extends StatelessWidget {
-  final String name;
-  final String content;
-  ActiveSessionScreen(this.name, this.content);
+  final SessionData sessionData;
+  ActiveSessionScreen(this.sessionData);
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.blueAccent,
-            bottom: TabBar(
-              tabs: [
-                Tab(icon: Icon(Icons.camera_alt), text: "Scanear"),
-                Tab(icon: Icon(Icons.space_bar), text: "Manual"),
-              ],
-            ),
-            title: Text('$name'),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 2,
+          backgroundColor: Colors.blueAccent,
+          bottom: TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.camera_alt), text: "Scanear"),
+              Tab(icon: Icon(Icons.space_bar), text: "Manual"),
+            ],
           ),
-          body: Column(
-            children: <Widget>[
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    Placeholder(), // Barcode Widget
-                    ManualInputForm(),
+          title: Text('$sessionData.name'),
+        ),
+        body: Column(
+          children: <Widget>[
+            Expanded(
+              child: TabBarView(
+                children: [
+                  Placeholder(), // Barcode Widget
+                  ManualInputForm(),
+                ],
+              ),
+            ),
+            Container(
+              height: 80,
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'Quantidade',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    QuantitySlider(),
+                    RaisedButton(
+                      onPressed: () {
+                        return showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                // Retrieve the text the that user has entered by using the
+                                // TextEditingController.
+                                content: Text("dede"),
+                              );
+                            });
+                      },
+                      child: Text("OK"),
+                    )
                   ],
                 ),
               ),
-              Container(
-                height: 80,
-                child: Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        'Quantidade',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      QuantitySlider()
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
@@ -340,28 +371,27 @@ class _ManualInputFormState extends State<ManualInputForm> {
         controller: myController,
         decoration: InputDecoration(labelText: "Código de Barras"),
       ),
-      RaisedButton(
-        onPressed: () {
-          return showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  // Retrieve the text the that user has entered by using the
-                  // TextEditingController.
-                  content: Text(myController.text),
-                );
-              });
-        },
-        child: Text("OK"),
-      )
+      // RaisedButton(
+      //   onPressed: () {
+      //     return showDialog(
+      //         context: context,
+      //         builder: (context) {
+      //           return AlertDialog(
+      //             // Retrieve the text the that user has entered by using the
+      //             // TextEditingController.
+      //             content: Text(myController.text),
+      //           );
+      //         });
+      //   },
+      //   child: Text("OK"),
+      // )
     ]));
   }
 }
 
-class SessionItem extends StatelessWidget {
-  final String name;
-  final String content;
-  SessionItem(this.name, this.content);
+class SessionTileItem extends StatelessWidget {
+  final String sessionData;
+  SessionTileItem(this.sessionData);
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -370,7 +400,7 @@ class SessionItem extends StatelessWidget {
         color: Colors.blueGrey[50],
         child: InkWell(
           onTap: () {
-            _navigateToSession(context, name, content);
+            _navigateToSession(context, sessionData);
           },
           child: Padding(
             padding: EdgeInsets.all(8),
@@ -381,7 +411,7 @@ class SessionItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      name,
+                      sessionData.name,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.blueGrey,
