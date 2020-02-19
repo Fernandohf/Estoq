@@ -1,4 +1,4 @@
-package com.example.estoq
+package com.code92.estoq
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

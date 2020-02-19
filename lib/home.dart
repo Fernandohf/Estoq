@@ -74,13 +74,13 @@ class Home extends StatelessWidget {
   }
 }
 
-// TODO fix for new patterns
+
 Widget _buildSessions() {
   List<SessionData> data = loadSessionsData();
   if (data.isEmpty) {
     return Center(
         child: Text(
-      "Nothing here... 🙃",
+      "Nada aqui... 🙃",
       style: TextStyle(fontSize: 20, color: Colors.grey[500]),
     ));
   } else {
@@ -116,13 +116,13 @@ class SessionTileItem extends StatelessWidget {
                     Text(
                       sessionData.name,
                       textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 16),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 22, fontWeight: FontWeight.w600),
                     ),
                     Container(
                       child: Text(
                         sessionData.entries.isEmpty
-                            ? "Nothing here..."
-                            : sessionData.entries[0].toString(),
+                            ? "Nada aqui..."
+                            : sessionData.entries[0].toString() + "\n" + "...",
                         textAlign: TextAlign.left,
                         style: TextStyle(
                             color: Colors.blueGrey[400], fontSize: 12),

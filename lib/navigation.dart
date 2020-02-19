@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'session_view.dart';
 import 'active_view.dart';
@@ -28,8 +29,9 @@ void navigateToSession(BuildContext context, sessionData) {
   }));
 }
 
-void navigateToActiveSession(BuildContext context, sessionData) {
+Future<void> navigateToActiveSession(BuildContext context, sessionData) async{
+  CameraDescription camera = await getCamera();
   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-    return ActiveSessionScreen(sessionData);
+    return ActiveSessionScreen(sessionData, camera);
   }));
 }

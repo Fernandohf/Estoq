@@ -24,24 +24,8 @@ class SessionScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Text(
-                        //   name,
-                        //   textAlign: TextAlign.left,
-                        //   style: TextStyle(color: Colors.black, fontSize: 20),
-                        // ),
                         Expanded(
-                          child: Scrollbar(
-                            child: ListView(children: <Widget>[
-                              Container(
-                                child: Text(
-                                  sessionData.entries.toString(),
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 16),
-                                ),
-                              ),
-                            ]),
-                          ),
+                          child: Scrollbar(child: _buildEntries(sessionData)),
                         )
                       ]),
                 ),
@@ -63,7 +47,7 @@ class SessionScreen extends StatelessWidget {
               FlatButton(
                 onPressed: () {
                   print("Export this session");
-                }, // append to entry
+                }, // TODO append to entry
                 child: Icon(Icons.arrow_upward, color: Colors.blueAccent),
               ),
               FlatButton(
@@ -75,6 +59,73 @@ class SessionScreen extends StatelessWidget {
             ],
           )
         ],
+      ),
+    );
+  }
+}
+
+Widget _buildEntries(SessionData data) {
+  if (data.entries.isEmpty) {
+    return Center(
+        child: Text(
+      "Nada aqui... 🙃",
+      style: TextStyle(fontSize: 20, color: Colors.grey[500]),
+    ));
+  } else {
+    return ListView.builder(
+      itemBuilder: (BuildContext context, int index) =>
+          EntryTileItem(data.barcodes[index], data.quantities[index]),
+      itemCount: data.entries.length,
+    );
+  }
+}
+
+class EntryTileItem extends StatelessWidget {
+  final String barcode;
+  final int quantity;
+  EntryTileItem(this.barcode, this.quantity);
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(1),
+      child: Row(
+        children: <Widget>[
+          CardText(barcode, 4),
+          CardText(quantity.toString(), 1, aligment: TextAlign.center),
+        ],
+      ),
+    );
+  }
+}
+
+class CardText extends StatelessWidget {
+  final String text;
+  final int weight;
+  final TextAlign aligment;
+  CardText(this.text, this.weight, {this.aligment = TextAlign.left});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Expanded(
+        flex: weight,
+        child: Card(
+          color: Colors.blueGrey[50],
+          child: InkWell(
+            onTap: () {},
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  text,
+                  textAlign: aligment,
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
