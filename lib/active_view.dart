@@ -5,6 +5,7 @@ import 'data.dart';
 import 'dart:io';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
+import 'session_view.dart';
 
 Future<CameraDescription> getCamera() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -70,107 +71,120 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     // Dispose of the controller when the widget is disposed.
     _camController.dispose();
     _tabController.dispose();
+    _textEditingController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: Scaffold(
-      appBar: AppBar(
-        elevation: 2,
-        backgroundColor: Colors.blueAccent,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(icon: Icon(Icons.camera_alt), text: "Scanear"),
-            Tab(icon: Icon(Icons.space_bar), text: "Manual"),
-          ],
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 2,
+          backgroundColor: Colors.blueAccent,
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(icon: Icon(Icons.camera_alt), text: "Scanear"),
+              Tab(icon: Icon(Icons.space_bar), text: "Manual"),
+            ],
+          ),
+          title: Text(sessionData.name),
         ),
-        title: Text(sessionData.name),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                BarcodeScanner(
-                    camera, _camController, _initializeControllerFuture),
-                ManualInputForm(_textEditingController),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Card(
-                child: Text(
-              lastBarcode,
-              style: TextStyle(fontSize: 18, color: Colors.blueGrey),
-              textAlign: TextAlign.start,
-            )),
-          ),
-          Container(
-            height: 80,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Quantidade',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    QuantitySlider(updateSliderValue),
-                    RaisedButton(
-                      onPressed: () async {
-                        // Check if camera is active
-                        if (_tabController.index == 1) {
-                          // Take Picture
-                          try {
-                            await _initializeControllerFuture;
-                            // Store the picture in the temp directory.
-                            final path = join(
-                              (await getTemporaryDirectory()).path,
-                              '${DateTime.now()}.png',
-                            );
-
-                            // Attempt to take a picture and log where it's been saved.
-                            await _camController.takePicture(path);
-                            print("Picture saved: $path");
-
-                            // Load picture
-                            Image image = Image.file(File(path));
-                            
-                          } catch (e) {
-                            // If an error occurs, log the error to the console.
-                            print("Error occured!");
-                            print(e);
-                          }
-                        }
-                        // Not on camera tab
-                        else {
-                          print(lastBarcode);
-                          // Empty text
-                          _textEditingController.clear();
-                          setState(() {});
-                        }
-                        // Join data and save it
-                        print("Slider:  $sliderValue");
-                        print("barcode:  $lastBarcode");
-                      },
-                      child: Icon(Icons.scanner),
-                    )
+        body: Center(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                flex: 4,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    BarcodeScanner(
+                        camera, _camController, _initializeControllerFuture),
+                    ManualInputForm(_textEditingController),
                   ],
                 ),
               ),
-            ),
-          )
-        ],
+              Expanded(
+                  flex: 5,
+                  child: SafeArea(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                        SessionCard(sessionData, reverse: true),
+                      ]))),
+              Container(
+                height: 80,
+                alignment: Alignment.bottomCenter,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          'Quantidade',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        QuantitySlider(updateSliderValue),
+                        RaisedButton(
+                          onPressed: () async {
+                            // Check if camera is active
+                            if (_tabController.index == 0) {
+                              // Take Picture
+                              try {
+                                await _initializeControllerFuture;
+                                // Store the picture in the temp directory.
+                                final path = join(
+                                  (await getTemporaryDirectory()).path,
+                                  '${DateTime.now()}.png',
+                                );
+
+                                // Attempt to take a picture and log where it's been saved.
+                                await _camController.takePicture(path);
+                                print("Picture saved: $path");
+
+                                // Load picture
+                                Image image = Image.file(File(path));
+
+                                // TODO ML toolkit
+                              } catch (e) {
+                                // If an error occurs, log the error to the console.
+                                print("Error occured!");
+                                print(e);
+                              }
+                            }
+                            // Not on camera tab
+                            else {
+                              lastBarcode = _textEditingController.text;
+                              print(lastBarcode);
+                              // Empty text
+                              _textEditingController.text = "";
+                              setState(() {});
+                            }
+                            // TODO add values
+                            // Join data and save it
+                            print("Slider:  $sliderValue");
+                            print("barcode:  $lastBarcode");
+                          },
+                          child: Text(
+                            "OK",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          color: Colors.blueAccent,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -204,7 +218,26 @@ class _BarcodeScannerState extends State {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           // If the Future is complete, display the preview.
-          return CameraPreview(_controller);
+          return AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: ClipRect(
+              child: Transform.scale(
+                scale: 2 / _controller.value.aspectRatio,
+                child: Center(
+                  child: Container(
+                    color: Colors.black,
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      // child: CustomPainter(
+                      //   painter: ,
+                      //   foregroundPainter: new GuidelinePainter(), // TODO painting
+                      child: CameraPreview(_controller),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
         } else {
           // Otherwise, display a loading indicator.
           return Center(child: CircularProgressIndicator());
@@ -266,13 +299,6 @@ class _ManualInputFormState extends State<ManualInputForm> {
   // of the TextField.
   final TextEditingController textController;
   _ManualInputFormState(this.textController);
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    textController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

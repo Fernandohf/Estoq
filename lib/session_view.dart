@@ -5,6 +5,11 @@ import 'navigation.dart';
 class SessionScreen extends StatelessWidget {
   final SessionData sessionData;
   SessionScreen(this.sessionData);
+
+  void removeEntryDataAt(int index) {
+    this.sessionData.entries.removeAt(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -13,32 +18,33 @@ class SessionScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Expanded(
-            child: Card(
-              color: Colors.blueGrey[50],
-              child: InkWell(
-                onTap: () {},
-                child: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: Scrollbar(child: _buildEntries(sessionData)),
-                        )
-                      ]),
-                ),
-              ),
-            ),
-          ),
+          SessionCard(sessionData),
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
               FlatButton(
                 onPressed: () {
-                  print("Remove this session");
-                }, // TODO remove entry with confirmaiton dialog
+                  print("Deleting session");
+                  showDialog(
+                      context: context,
+                      child: AlertDialog(
+                        title: Text("Realmente quer remover a sessão?"),
+                        actions: <Widget>[
+                          FlatButton(
+                              onPressed: () {},
+                              child: Text(
+                                "Não",
+                                style: TextStyle(color: Colors.redAccent),
+                              )), // TODO
+                          FlatButton(
+                              onPressed: () {},
+                              child: Text(
+                                "Sim",
+                                style: TextStyle(color: Colors.blueAccent),
+                              )), // TODO
+                        ],
+                      ));
+                },
                 child: Icon(
                   Icons.delete,
                   color: Colors.redAccent,
@@ -64,7 +70,36 @@ class SessionScreen extends StatelessWidget {
   }
 }
 
-Widget _buildEntries(SessionData data) {
+class SessionCard extends StatelessWidget {
+  final SessionData sessionData;
+  final bool reverse;
+  const SessionCard(this.sessionData, {this.reverse=false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Card(
+        color: Colors.blueGrey[50],
+        child: InkWell(
+          onTap: () {},
+          child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Scrollbar(child: _buildEntries(sessionData, reverse: reverse)),
+                  ),
+                ],
+              )),
+        ),
+      ),
+    );
+  }
+}
+
+Widget _buildEntries(SessionData data, {bool reverse=false}) {
   if (data.entries.isEmpty) {
     return Center(
         child: Text(
@@ -74,8 +109,9 @@ Widget _buildEntries(SessionData data) {
   } else {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) =>
-          EntryTileItem(data.barcodes[index], data.quantities[index]),
+          EntryTileItem(data.barcodes[index], data.quantities[index], index),
       itemCount: data.entries.length,
+      reverse: reverse,
     );
   }
 }
@@ -83,16 +119,23 @@ Widget _buildEntries(SessionData data) {
 class EntryTileItem extends StatelessWidget {
   final String barcode;
   final int quantity;
-  EntryTileItem(this.barcode, this.quantity);
+  final int index;
+  EntryTileItem(this.barcode, this.quantity, this.index);
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(1),
-      child: Row(
-        children: <Widget>[
-          CardText(barcode, 4),
-          CardText(quantity.toString(), 1, aligment: TextAlign.center),
-        ],
+      child: Dismissible(
+        onDismissed: (DismissDirection direcion) {
+
+        },
+        key: Key(index.toString()),
+        child: Row(
+          children: <Widget>[
+            CardText(barcode, 4),
+            CardText(quantity.toString(), 1, aligment: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
@@ -102,7 +145,7 @@ class CardText extends StatelessWidget {
   final String text;
   final int weight;
   final TextAlign aligment;
-  CardText(this.text, this.weight, {this.aligment = TextAlign.left});
+  CardText(this.text, this.weight, {this.aligment});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +153,7 @@ class CardText extends StatelessWidget {
       child: Expanded(
         flex: weight,
         child: Card(
-          color: Colors.blueGrey[50],
+          color: Colors.white,
           child: InkWell(
             onTap: () {},
             child: Padding(

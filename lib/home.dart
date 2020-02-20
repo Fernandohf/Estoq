@@ -116,7 +116,7 @@ class SessionTileItem extends StatelessWidget {
                     Text(
                       sessionData.name,
                       textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 22, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 24, fontWeight: FontWeight.w600),
                     ),
                     Container(
                       child: Text(
@@ -125,7 +125,7 @@ class SessionTileItem extends StatelessWidget {
                             : sessionData.entries[0].toString() + "\n" + "...",
                         textAlign: TextAlign.left,
                         style: TextStyle(
-                            color: Colors.blueGrey[400], fontSize: 12),
+                            color: Colors.blueGrey[300], fontSize: 12),
                       ),
                     )
                   ]),

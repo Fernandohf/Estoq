@@ -1,16 +1,39 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+import 'package:sembast/sembast.dart';
+import 'package:sembast/sembast_io.dart';
 
 // Settings options class
 class UserSettings {
   String delimiter = ",";
   String exportPath = 'estoq/sessions';
 
-  UserSettings({this.delimiter, this.exportPath});
+  UserSettings({this.delimiter});
+
+  set changeDelimiter(String value) {
+    if ([";", ",", " ", "/", "\t"].contains(value)) {
+      this.delimiter = value;
+    } else {
+      print("Invalid Delimiter");
+    }
+  }
 
   String toString() {
-    return "delimiter: $delimiter \n exportPath: $exportPath";
+    return "delimiter: $delimiter, \n exportPath: $exportPath,";
+  }
+
+  Map toMap() {
+    return {
+      "delimiter": delimiter,
+      "exportPath": exportPath,
+    };
+  }
+
+  void fromMap(Map map) {
+    this.delimiter = map["delimiter"];
+    this.exportPath = map["exportPath"];
   }
 }
 
@@ -23,6 +46,10 @@ class EntryData {
 
   String toString() {
     return "$barCode , $quantity";
+  }
+  void fromMap(Map map) {
+    this.barCode = map["barcode"];
+    this.quantity = map["quantity"];
   }
 }
 
@@ -59,10 +86,14 @@ class SessionData {
     }
     return stringRep;
   }
+  void fromMap(Map map) {
+    this.name = map["name"];
+    this.entries = map["entries"]; //TODO
+  }
 }
 
 // Load saved data from disk
-List<SessionData> loadSessionDatabByKey(Key key) {
+List<SessionData> testSessionsData(Key key) {
   return [
     SessionData(
         name: "aa",
@@ -73,16 +104,23 @@ List<SessionData> loadSessionDatabByKey(Key key) {
   ];
 }
 
-List<SessionData> loadSessionsData() {
-  return [
-    SessionData(
-        name: "aa",
-        entries: [EntryData("78912173131", 5), EntryData("1241242412", 2)]),
-    SessionData(
-      name: "bb",
-      entries: []
-    )
-  ];
+Future<Database> getDb() async {
+  var dir = await getApplicationDocumentsDirectory();
+  // make sure it exists
+  await dir.create(recursive: true);
+  // build the database path
+  var dbPath = join(dir.path, 'estoq.db');
+  return await databaseFactoryIo
+      .openDatabase(dbPath);
+}
+
+void penSessionsTable(Database db) async {
+  // get the application documents directory
+
+}
+Future<List<SessionData>> loadSessionsData() async{
+
+  return []
 }
 
 void saveSessionData() {
