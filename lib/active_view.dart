@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'session_view.dart';
+import 'main.dart';
 
 Future<CameraDescription> getCamera() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -32,11 +33,11 @@ class ActiveSessionScreen extends StatefulWidget {
 
 class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     with SingleTickerProviderStateMixin {
-  final SessionData sessionData;
   final CameraDescription camera;
+  SessionData sessionData;
   String lastBarcode = "";
   int sliderValue = 1;
-  int activeTab = 1;
+  int activeTab = 0;
   CameraController _camController;
   TabController _tabController;
   TextEditingController _textEditingController;
@@ -46,10 +47,6 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   void updateSliderValue(int value) {
     this.sliderValue = value;
   }
-
-  // void updateLastBarcode(String value) {
-  //   this.lastBarcode = value;
-  // }
 
   @override
   void initState() {
@@ -72,6 +69,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     _camController.dispose();
     _tabController.dispose();
     _textEditingController.dispose();
+    // Sessions sessions = Home.of(context).sessions;
+    // sessions.saveAll();
     super.dispose();
   }
 
@@ -112,7 +111,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                        SessionCard(sessionData, reverse: true),
+                        SessionCard(sessionData, true),
                       ]))),
               Container(
                 height: 80,
@@ -152,7 +151,6 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                                 // TODO ML toolkit
                               } catch (e) {
                                 // If an error occurs, log the error to the console.
-                                print("Error occured!");
                                 print(e);
                               }
                             }
@@ -162,15 +160,25 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                               print(lastBarcode);
                               // Empty text
                               _textEditingController.text = "";
-                              setState(() {});
                             }
-                            // TODO add values
                             // Join data and save it
                             print("Slider:  $sliderValue");
                             print("barcode:  $lastBarcode");
+
+                            // update
+                            Map<String, Object> entry = {
+                              "barcode": lastBarcode,
+                              "quantity": sliderValue.toInt()
+                            };
+                            Sessions sessions = Home.of(context).sessions;
+                            sessions.addEntry(sessionData, entry);
+
+                            //
+                            print("Adicionando entry");
+                            setState(() {});
                           },
                           child: Text(
-                            "OK",
+                            "Adicionar",
                             style: TextStyle(color: Colors.white),
                           ),
                           color: Colors.blueAccent,
@@ -213,29 +221,61 @@ class _BarcodeScannerState extends State {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size.width;
     return FutureBuilder<void>(
       future: _initializeControllerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           // If the Future is complete, display the preview.
-          return AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: ClipRect(
-              child: Transform.scale(
-                scale: 2 / _controller.value.aspectRatio,
-                child: Center(
-                  child: Container(
-                    color: Colors.black,
-                    child: AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      // child: CustomPainter(
-                      //   painter: ,
-                      //   foregroundPainter: new GuidelinePainter(), // TODO painting
-                      child: CameraPreview(_controller),
+          return Center(
+            child: Stack(
+              alignment: FractionalOffset.center,
+              children: <Widget>[
+                Container(
+                  width: size,
+                  height: size,
+                  child: ClipRect(
+                    child: OverflowBox(
+                      alignment: Alignment.center,
+                      child: FittedBox(
+                        fit: BoxFit.fitWidth,
+                        child: Container(
+                          width: size,
+                          height: size / _controller.value.aspectRatio,
+                          child: AspectRatio(
+                            aspectRatio: _controller.value.aspectRatio,
+                            // child: CustomPainter(
+                            //   painter: ,
+                            //   foregroundPainter: new GuidelinePainter(), // TODO painting
+                            child: CameraPreview(_controller),
+                          ), // this is my CameraPreview
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      border: Border(
+                        top: BorderSide(color: Colors.black45, width: 45),
+                        left: BorderSide(color: Colors.black45, width: 25),
+                        right: BorderSide(color: Colors.black45, width: 25),
+                        bottom: BorderSide(color: Colors.black45, width: 45),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Divider(
+                    color: Colors.redAccent,
+                    thickness: 3,
+                    indent: 40,
+                    endIndent: 40,
+                  )
+                ),
+              ],
             ),
           );
         } else {

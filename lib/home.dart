@@ -1,8 +1,9 @@
 import 'package:estoq/data.dart';
+import 'package:estoq/main.dart';
 import 'package:flutter/material.dart';
 import 'navigation.dart';
 
-class Home extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,6 +43,15 @@ class Home extends StatelessWidget {
                     },
                   ),
                   ListTile(
+                    leading: Icon(Icons.restore),
+                    title: Text('Resetar'),
+                    onTap: () {
+                      Sessions data = Home.of(context).sessions;
+                      data.deleteAll();
+                      
+                    },
+                  ),
+                  ListTile(
                     leading: Icon(Icons.arrow_upward),
                     title: Text('Exportar'),
                     onTap: () {
@@ -68,33 +78,50 @@ class Home extends StatelessWidget {
             ),
             backgroundColor: Colors.blueAccent,
           ),
-          body: _buildSessions(),
+          body: SessionsBuilder(),
           floatingActionButton: ActionButton()),
     );
   }
 }
 
+class SessionsBuilder extends StatefulWidget {
+  @override
+  _SessionsBuilderState createState() => _SessionsBuilderState();
+}
 
-Widget _buildSessions() {
-  List<SessionData> data = loadSessionsData();
-  if (data.isEmpty) {
-    return Center(
-        child: Text(
-      "Nada aqui... 🙃",
-      style: TextStyle(fontSize: 20, color: Colors.grey[500]),
-    ));
-  } else {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) =>
-          SessionTileItem(data[index]),
-      itemCount: data.length,
-    );
+class _SessionsBuilderState extends State<SessionsBuilder> {
+  @override
+  Widget build(BuildContext context) {
+    Sessions sessions = Home.of(context).sessions;
+    if (sessions.data.isEmpty) {
+      return Center(
+          child: Text(
+        "Nada aqui... 🙃",
+        style: TextStyle(fontSize: 20, color: Colors.grey[500]),
+      ));
+    } else {
+      return ListView.builder(
+        itemBuilder: (BuildContext context, int index) =>
+            SessionTileItem(sessions.data.values.toList()[index]),
+        itemCount: sessions.data.values.length,
+      );
+    }
   }
 }
 
-class SessionTileItem extends StatelessWidget {
+class SessionTileItem extends StatefulWidget {
   final SessionData sessionData;
   SessionTileItem(this.sessionData);
+
+  @override
+  _SessionTileItemState createState() =>
+      _SessionTileItemState(this.sessionData);
+}
+
+class _SessionTileItemState extends State<SessionTileItem> {
+  final SessionData sessionData;
+  _SessionTileItemState(this.sessionData);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -116,7 +143,10 @@ class SessionTileItem extends StatelessWidget {
                     Text(
                       sessionData.name,
                       textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 24, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          color: Colors.blueGrey,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600),
                     ),
                     Container(
                       child: Text(
@@ -153,14 +183,12 @@ class ActionButton extends StatelessWidget {
 }
 
 class NewSessionDialog extends StatefulWidget {
-  NewSessionDialog({Key key}) : super(key: key);
-
   @override
   _NewSessionDialogState createState() => _NewSessionDialogState();
 }
 
 class _NewSessionDialogState extends State<NewSessionDialog> {
-  final formController = TextEditingController(text: "Nome da sessão");
+  final formController = TextEditingController();
   @override
   void dispose() {
     formController.dispose();
@@ -169,9 +197,11 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    Sessions sessions = Home.of(context).sessions;
+    formController.text = "Sessão_${sessions.data.length + 1}";
     return SimpleDialog(title: Text("Nova Sessão"), children: <Widget>[
       Padding(
-          padding: const EdgeInsets.fromLTRB(18, 1, 18, 2),
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
           child: Container(
             child: Form(
               child: TextFormField(
@@ -179,7 +209,7 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
                 decoration: InputDecoration(
                     hintText: "Nome da Sessão",
                     border: OutlineInputBorder(
-                      gapPadding: .3,
+                      gapPadding: 3,
                     )),
               ),
             ),
@@ -192,10 +222,13 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
               child:
                   Text('Cancelar', style: TextStyle(color: Colors.redAccent))),
           FlatButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
+                // Create and save session
                 SessionData newSession =
-                    new SessionData.empty(name: formController.text);
+                    new SessionData.empty(formController.text);
+                Sessions sessions = Home.of(context).sessions;
+                sessions.add(newSession);
                 navigateToActiveSession(context, newSession);
               },
               child: Text(

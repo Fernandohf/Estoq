@@ -7,10 +7,14 @@ import 'package:sembast/sembast_io.dart';
 
 // Settings options class
 class UserSettings {
-  String delimiter = ",";
-  String exportPath = 'estoq/sessions';
+  String delimiter;
+  String exportPath;
 
-  UserSettings({this.delimiter});
+  UserSettings({this.delimiter = ",", this.exportPath = 'estoq/sessions'});
+  UserSettings.fromMap(var map) {
+    this.delimiter = map["delimiter"];
+    this.exportPath = map["exportPath"];
+  }
 
   set changeDelimiter(String value) {
     if ([";", ",", " ", "/", "\t"].contains(value)) {
@@ -18,6 +22,18 @@ class UserSettings {
     } else {
       print("Invalid Delimiter");
     }
+  }
+
+  void save() async {
+    // Saves in main store
+    Database db = await getDb();
+    var store = StoreRef.main();
+
+    // Easy to put/get simple values or map
+    await db.transaction((txn) async {
+      await store.record('delimiter').put(txn, this.delimiter);
+      await store.record('exportPath').put(txn, this.exportPath);
+    });
   }
 
   String toString() {
@@ -30,43 +46,31 @@ class UserSettings {
       "exportPath": exportPath,
     };
   }
-
-  void fromMap(Map map) {
-    this.delimiter = map["delimiter"];
-    this.exportPath = map["exportPath"];
-  }
-}
-
-// Data row class
-class EntryData {
-  String barCode;
-  int quantity;
-
-  EntryData(this.barCode, this.quantity);
-
-  String toString() {
-    return "$barCode , $quantity";
-  }
-  void fromMap(Map map) {
-    this.barCode = map["barcode"];
-    this.quantity = map["quantity"];
-  }
 }
 
 // Session data class
 class SessionData {
   String name;
-  List<EntryData> entries = [];
-  final Key key = UniqueKey();
-  final DateTime date = DateTime.now();
+  List<Map<String, Object>> entries = [];
+  Key key;
+  DateTime date = DateTime.now();
 
-  SessionData({this.name, this.entries});
-  SessionData.empty({this.name});
+  SessionData.empty(String name) {
+    this.name = name;
+    this.key = Key(name);
+    this.date = DateTime.now();
+  }
+  SessionData.fromRecordSnapShot(var map) {
+    this.name = map["name"];
+    this.entries = List.from(map["entries"]);
+    this.date = DateTime.parse(map["date"]);
+    this.key = Key(this.name);
+  }
 
   List<String> get barcodes {
     List<String> _barcodes = [];
     for (final value in this.entries) {
-      _barcodes.add(value.barCode);
+      _barcodes.add(value["barcode"]);
     }
     return _barcodes;
   }
@@ -74,9 +78,38 @@ class SessionData {
   List<int> get quantities {
     List<int> _quantities = [];
     for (final value in this.entries) {
-      _quantities.add(value.quantity);
+      _quantities.add(value["quantity"]);
     }
     return _quantities;
+  }
+
+  void removeEntry(int index) {
+    this.entries.removeAt(index);
+  }
+
+  void save() async {
+    // Saves in main store
+    Database db = await getDb();
+    var sessionStore = getSessionStore();
+
+    // Easy to put/get simple values or map
+    await db.transaction((txn) async {
+      await sessionStore.record(this.key.toString()).put(txn, {
+        "name": this.name,
+        "entries": this.entries,
+        "date": this.date.toString()
+      });
+    });
+  }
+
+  void delete() async {
+    Database db = await getDb();
+    var sessionStore = getSessionStore();
+
+    // Easy to put/get simple values or map
+    await db.transaction((txn) async {
+      await sessionStore.record(this.key.toString()).delete(txn);
+    });
   }
 
   String toString() {
@@ -86,22 +119,56 @@ class SessionData {
     }
     return stringRep;
   }
-  void fromMap(Map map) {
-    this.name = map["name"];
-    this.entries = map["entries"]; //TODO
-  }
 }
 
-// Load saved data from disk
-List<SessionData> testSessionsData(Key key) {
-  return [
-    SessionData(
-        name: "aa",
-        entries: [EntryData("78912173131", 5), EntryData("1241242412", 2)]),
-    SessionData(
-      name: "aa",
-    )
-  ];
+class Sessions {
+  Map<String, SessionData> data = {};
+
+  Future<void> loadFromDisk() async {
+    Database db = await getDb();
+    var sessionStore = getSessionStore();
+    var finder = Finder(sortOrders: [SortOrder('name')]);
+    var results = await sessionStore.find(db, finder: finder);
+    Map<String, SessionData> sessions = {};
+    for (final map in results) {
+      sessions[map.key] = SessionData.fromRecordSnapShot(map);
+    }
+    this.data = sessions;
+  }
+
+  void remove(SessionData session) {
+    this.data[session.key.toString()].delete();
+    this.data.remove(session.key.toString());
+  }
+
+  void add(SessionData session) {
+    this.data[session.key.toString()] = session;
+    this.data[session.key.toString()].save();
+  }
+
+  void saveAll() {
+    for (final value in this.data.values) {
+      value.save();
+    }
+  }
+
+  void addEntry(SessionData session, Map<String, Object> entry) {
+    this.data[session.key.toString()].entries.add(entry);
+    this.data[session.key.toString()].save();
+  }
+
+  void removeEntryAt(SessionData session, int index) {
+    this.data[session.key.toString()].entries.removeAt(index);
+    this.data[session.key.toString()].save();
+  }
+  void deleteAll() async {
+    // On disk
+    var db = await getDb();
+    var store = getSessionStore();
+    await store.delete(db);
+    // Memory
+    this.data = {};
+  }
 }
 
 Future<Database> getDb() async {
@@ -110,19 +177,23 @@ Future<Database> getDb() async {
   await dir.create(recursive: true);
   // build the database path
   var dbPath = join(dir.path, 'estoq.db');
-  return await databaseFactoryIo
-      .openDatabase(dbPath);
+  return await databaseFactoryIo.openDatabase(dbPath);
 }
 
-void penSessionsTable(Database db) async {
-  // get the application documents directory
-
-}
-Future<List<SessionData>> loadSessionsData() async{
-
-  return []
+StoreRef getSessionStore() {
+  return stringMapStoreFactory.store("Sessions");
 }
 
-void saveSessionData() {
-  //TODO
+Future<UserSettings> loadUserSettings() async {
+  Database db = await getDb();
+  var store = StoreRef.main();
+
+  var results = await store.find(db);
+
+  // Only singletons
+  if (results.isEmpty) {
+    return UserSettings();
+  } else {
+    return UserSettings.fromMap(results.first);
+  }
 }

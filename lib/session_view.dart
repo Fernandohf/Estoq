@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'data.dart';
 import 'navigation.dart';
+import 'main.dart';
 
 class SessionScreen extends StatelessWidget {
   final SessionData sessionData;
   SessionScreen(this.sessionData);
-
-  void removeEntryDataAt(int index) {
-    this.sessionData.entries.removeAt(index);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,30 +15,36 @@ class SessionScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          SessionCard(sessionData),
+          SessionCard(sessionData, false),
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
               FlatButton(
                 onPressed: () {
-                  print("Deleting session");
                   showDialog(
                       context: context,
                       child: AlertDialog(
                         title: Text("Realmente quer remover a sessão?"),
                         actions: <Widget>[
                           FlatButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
                               child: Text(
                                 "Não",
                                 style: TextStyle(color: Colors.redAccent),
-                              )), // TODO
+                              )),
                           FlatButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Sessions sessions = Home.of(context).sessions;
+                                sessions.remove(sessionData);
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
                               child: Text(
                                 "Sim",
                                 style: TextStyle(color: Colors.blueAccent),
-                              )), // TODO
+                              )),
                         ],
                       ));
                 },
@@ -70,10 +73,19 @@ class SessionScreen extends StatelessWidget {
   }
 }
 
-class SessionCard extends StatelessWidget {
+class SessionCard extends StatefulWidget {
   final SessionData sessionData;
   final bool reverse;
-  const SessionCard(this.sessionData, {this.reverse=false});
+  SessionCard(this.sessionData, this.reverse);
+
+  @override
+  _SessionCardState createState() => _SessionCardState(sessionData, reverse);
+}
+
+class _SessionCardState extends State<SessionCard> {
+  SessionData sessionData;
+  final bool reverse;
+  _SessionCardState(this.sessionData, this.reverse);
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +101,27 @@ class SessionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: Scrollbar(child: _buildEntries(sessionData, reverse: reverse)),
+                    child: Scrollbar(
+                        child: sessionData.entries.isEmpty
+                            ? Center(
+                                child: Text(
+                                "Nada aqui... 🙃",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.grey[500]),
+                              ))
+                            : ListView.builder(
+                                itemBuilder: (BuildContext context, int index) {
+                                  List<String> barcodes;
+                                  List<int> quantities;
+                                  barcodes = sessionData.barcodes;
+                                  quantities = sessionData.quantities;
+                                  return EntryTileItem({
+                                    "barcode": barcodes[index],
+                                    "quantity": quantities[index],
+                                  }, index, sessionData);
+                                },
+                                itemCount: sessionData.entries.length,
+                              )),
                   ),
                 ],
               )),
@@ -99,41 +131,38 @@ class SessionCard extends StatelessWidget {
   }
 }
 
-Widget _buildEntries(SessionData data, {bool reverse=false}) {
-  if (data.entries.isEmpty) {
-    return Center(
-        child: Text(
-      "Nada aqui... 🙃",
-      style: TextStyle(fontSize: 20, color: Colors.grey[500]),
-    ));
-  } else {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) =>
-          EntryTileItem(data.barcodes[index], data.quantities[index], index),
-      itemCount: data.entries.length,
-      reverse: reverse,
-    );
-  }
+class EntryTileItem extends StatefulWidget {
+  final Map<String, Object> entry;
+  final int index;
+  final SessionData sessionData;
+  EntryTileItem(this.entry, this.index, this.sessionData);
+
+  @override
+  _EntryTileItemState createState() =>
+      _EntryTileItemState(this.entry, this.index, this.sessionData);
 }
 
-class EntryTileItem extends StatelessWidget {
-  final String barcode;
-  final int quantity;
+class _EntryTileItemState extends State<EntryTileItem> {
+  Map<String, Object> entry;
   final int index;
-  EntryTileItem(this.barcode, this.quantity, this.index);
+  SessionData sessionData;
+  _EntryTileItemState(this.entry, this.index, this.sessionData);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(1),
       child: Dismissible(
         onDismissed: (DismissDirection direcion) {
-
+          Sessions sessions = Home.of(context).sessions;
+          sessions.removeEntryAt(sessionData, index);
         },
-        key: Key(index.toString()),
+        key: UniqueKey(),
         child: Row(
           children: <Widget>[
-            CardText(barcode, 4),
-            CardText(quantity.toString(), 1, aligment: TextAlign.center),
+            CardText(entry["barcode"], 4),
+            CardText(entry["quantity"].toString(), 1,
+                aligment: TextAlign.center),
           ],
         ),
       ),
@@ -149,22 +178,20 @@ class CardText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Expanded(
-        flex: weight,
-        child: Card(
-          color: Colors.white,
-          child: InkWell(
-            onTap: () {},
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  text,
-                  textAlign: aligment,
-                  style: TextStyle(color: Colors.blueGrey, fontSize: 14),
-                ),
+    return Expanded(
+      flex: weight,
+      child: Card(
+        color: Colors.white,
+        child: InkWell(
+          onTap: () {},
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                text,
+                textAlign: aligment,
+                style: TextStyle(color: Colors.blueGrey, fontSize: 14),
               ),
             ),
           ),
