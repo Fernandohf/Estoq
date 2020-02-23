@@ -6,6 +6,7 @@ import 'main.dart';
 class SessionScreen extends StatelessWidget {
   final SessionData sessionData;
   SessionScreen(this.sessionData);
+  
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class SessionScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          SessionCard(sessionData, false),
+          SessionCard(sessionData),
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -35,9 +36,9 @@ class SessionScreen extends StatelessWidget {
                                 style: TextStyle(color: Colors.redAccent),
                               )),
                           FlatButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 Sessions sessions = Home.of(context).sessions;
-                                sessions.remove(sessionData);
+                                await sessions.remove(sessionData);
                                 Navigator.pop(context);
                                 Navigator.pop(context);
                               },
@@ -75,17 +76,15 @@ class SessionScreen extends StatelessWidget {
 
 class SessionCard extends StatefulWidget {
   final SessionData sessionData;
-  final bool reverse;
-  SessionCard(this.sessionData, this.reverse);
+  SessionCard(this.sessionData);
 
   @override
-  _SessionCardState createState() => _SessionCardState(sessionData, reverse);
+  _SessionCardState createState() => _SessionCardState(sessionData);
 }
 
 class _SessionCardState extends State<SessionCard> {
   SessionData sessionData;
-  final bool reverse;
-  _SessionCardState(this.sessionData, this.reverse);
+  _SessionCardState(this.sessionData);
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +155,7 @@ class _EntryTileItemState extends State<EntryTileItem> {
         onDismissed: (DismissDirection direcion) {
           Sessions sessions = Home.of(context).sessions;
           sessions.removeEntryAt(sessionData, index);
+          print(sessions.data);
         },
         key: UniqueKey(),
         child: Row(
