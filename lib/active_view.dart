@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'data.dart';
+import 'package:flutter_camera_ml_vision/flutter_camera_ml_vision.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'dart:io';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'session_view.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:torch/torch.dart';
 import 'main.dart';
 
 Future<CameraDescription> getCamera() async {
@@ -42,7 +46,19 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   TabController _tabController;
   TextEditingController _textEditingController;
   Future<void> _initializeControllerFuture;
+  double previewWidth;
+  double previewHeight = 200;
+  int borderTB = 45;
+  int borderLR = 0;
+  // Add configuration to differenret formats
+  static final barcodeDetectorOptions = BarcodeDetectorOptions();
+  final barcodeDectector =
+      FirebaseVision.instance.barcodeDetector(barcodeDetectorOptions);
   _ActiveSessionScreenState(this.sessionData, this.camera);
+
+  void updateSize(double width) {
+    this.previewWidth = width;
+  }
 
   void updateSliderValue(int value) {
     this.sliderValue = value;
@@ -52,7 +68,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   void initState() {
     super.initState();
     _textEditingController = TextEditingController();
-    _camController = CameraController(camera, ResolutionPreset.medium);
+    _camController = CameraController(camera, ResolutionPreset.high);
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
@@ -93,28 +109,32 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
         body: Center(
           child: Column(
             children: <Widget>[
-              Expanded(
-                flex: 4,
+              Container(
+                height: previewHeight.toDouble(),
                 child: TabBarView(
                   controller: _tabController,
                   children: [
                     BarcodeScanner(
-                        camera, _camController, _initializeControllerFuture),
+                        camera,
+                        _camController,
+                        _initializeControllerFuture,
+                        updateSize,
+                        borderLR,
+                        borderTB),
                     ManualInputForm(_textEditingController),
                   ],
                 ),
               ),
               Expanded(
-                  flex: 5,
                   child: SafeArea(
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                        SessionCard(sessionData, true),
-                      ]))),
+                    SessionCard(sessionData),
+                  ]))),
               Container(
-                height: 80,
+                height: 85,
                 alignment: Alignment.bottomCenter,
                 child: Center(
                   child: Padding(
@@ -136,19 +156,68 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                               try {
                                 await _initializeControllerFuture;
                                 // Store the picture in the temp directory.
+
                                 final path = join(
-                                  (await getTemporaryDirectory()).path,
+                                  //  (await getTemporaryDirectory()).path,
+                                  (await getApplicationDocumentsDirectory())
+                                      .path,
                                   '${DateTime.now()}.png',
                                 );
 
                                 // Attempt to take a picture and log where it's been saved.
                                 await _camController.takePicture(path);
-                                print("Picture saved: $path");
+                                Size previewSize = Size(
+                                    previewWidth - 2 * borderLR,
+                                    previewHeight - 2 * borderTB);
+                                File imgFie =
+                                    await resizeToPreview(path, previewSize);
+                                // String newPath = await _resizePhoto(
+                                //     path, borderLR, borderTB, imgSize);
 
-                                // Load picture
-                                Image image = Image.file(File(path));
+                                final image =
+                                    FirebaseVisionImage.fromFile(imgFie);
+                                List<Barcode> results =
+                                    await barcodeDectector.detectInImage(image);
+                                if (results.isEmpty) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (_) => new AlertDialog(
+                                            title: Text(
+                                              "Código de barras não foi detectado!",
+                                              style: TextStyle(
+                                                  color: Colors.redAccent,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            titlePadding: EdgeInsets.all(5),
+                                            actions: <Widget>[
+                                              Image.file(imgFie),
+                                              Text(
+                                                "*Verifique se a image esta em foco.",
+                                                textAlign: TextAlign.end,
+                                              ),
+                                            ],
+                                          ));
+                                  lastBarcode = "";
+                                } else {
+                                  lastBarcode = results.first.rawValue;
+                                }
+                                // showDialog(
+                                //     context: context,
+                                //     builder: (_) => new AlertDialog(
+                                //           actions: <Widget>[
+                                //             Image.file(File(path))
+                                //           ],
+                                //         ));
+                                // showDialog(
+                                //     context: context,
+                                //     builder: (_) => new AlertDialog(
+                                //           actions: <Widget>[
+                                //             Image.file(File(newPath))
+                                //           ],
+                                //         ));
 
-                                // TODO ML toolkit
                               } catch (e) {
                                 // If an error occurs, log the error to the console.
                                 print(e);
@@ -156,26 +225,28 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                             }
                             // Not on camera tab
                             else {
+                              // Check barcode
                               lastBarcode = _textEditingController.text;
-                              print(lastBarcode);
                               // Empty text
                               _textEditingController.text = "";
                             }
-                            // Join data and save it
-                            print("Slider:  $sliderValue");
-                            print("barcode:  $lastBarcode");
+                            if (lastBarcode.isNotEmpty) {
+                              // Join data and save it
+                              print("Slider:  $sliderValue");
+                              print("barcode:  $lastBarcode");
 
-                            // update
-                            Map<String, Object> entry = {
-                              "barcode": lastBarcode,
-                              "quantity": sliderValue.toInt()
-                            };
-                            Sessions sessions = Home.of(context).sessions;
-                            sessions.addEntry(sessionData, entry);
+                              // update
+                              Map<String, Object> entry = {
+                                "barcode": lastBarcode,
+                                "quantity": sliderValue.toInt()
+                              };
+                              Sessions sessions = Home.of(context).sessions;
+                              sessions.addEntry(sessionData, entry);
 
-                            //
-                            print("Adicionando entry");
-                            setState(() {});
+                              //
+                              print("Adicionando entry");
+                              setState(() {});
+                            }
                           },
                           child: Text(
                             "Adicionar",
@@ -195,19 +266,47 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     );
   }
 }
+// Future<String> extractBarcode(String imgPath){
+//   ImageProperties properties =
+//       await FlutterNativeImage.getImageProperties(imgPath);
+//       detector.detect(image)
+
+// }
+
+Future<File> resizeToPreview(String filePath, Size previewSize) async {
+  ImageProperties properties =
+      await FlutterNativeImage.getImageProperties(filePath);
+  double ratio = properties.height / previewSize.width;
+  Size scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
+  int xOff = ((properties.width - scaledSize.height) / 2).round();
+  int yOff = ((properties.height - scaledSize.width) / 2).round();
+
+  File croppedFile = await FlutterNativeImage.cropImage(filePath, xOff, yOff,
+      scaledSize.height.round(), scaledSize.width.round());
+  print("Cropped image saved at: $croppedFile.path");
+  return croppedFile;
+}
 
 class BarcodeScanner extends StatefulWidget {
   final CameraDescription camera;
   final CameraController cameraController;
   final Future<void> _initializeControllerFuture;
+  final Function updateSize;
+  final int borderTB;
+  final int borderLR;
 
   BarcodeScanner(
-      this.camera, this.cameraController, this._initializeControllerFuture);
+      this.camera,
+      this.cameraController,
+      this._initializeControllerFuture,
+      this.updateSize,
+      this.borderLR,
+      this.borderTB);
 
   @override
   _BarcodeScannerState createState() {
-    return _BarcodeScannerState(
-        camera, cameraController, _initializeControllerFuture);
+    return _BarcodeScannerState(camera, cameraController,
+        _initializeControllerFuture, updateSize, borderLR, borderTB);
   }
 }
 
@@ -216,12 +315,24 @@ class _BarcodeScannerState extends State {
   Future<void> _initializeControllerFuture;
   Function barcodeCallback;
   final CameraDescription camera;
+  final Function updateSize;
+  final int borderTB;
+  final int borderLR;
   _BarcodeScannerState(
-      this.camera, this._controller, this._initializeControllerFuture);
+      this.camera,
+      this._controller,
+      this._initializeControllerFuture,
+      this.updateSize,
+      this.borderLR,
+      this.borderTB);
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size.width;
+    IconData torchIcon = Icons.highlight;
+    double width = MediaQuery.of(context).size.width;
+    setState(() {
+      updateSize(width);
+    });
     return FutureBuilder<void>(
       future: _initializeControllerFuture,
       builder: (context, snapshot) {
@@ -232,49 +343,62 @@ class _BarcodeScannerState extends State {
               alignment: FractionalOffset.center,
               children: <Widget>[
                 Container(
-                  width: size,
-                  height: size,
+                  width: width,
                   child: ClipRect(
                     child: OverflowBox(
                       alignment: Alignment.center,
                       child: FittedBox(
                         fit: BoxFit.fitWidth,
                         child: Container(
-                          width: size,
-                          height: size / _controller.value.aspectRatio,
+                          width: width,
+                          height: width / _controller.value.aspectRatio,
                           child: AspectRatio(
                             aspectRatio: _controller.value.aspectRatio,
-                            // child: CustomPainter(
-                            //   painter: ,
-                            //   foregroundPainter: new GuidelinePainter(), // TODO painting
                             child: CameraPreview(_controller),
-                          ), // this is my CameraPreview
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
+                // Black overlay decoration
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black45,
                       border: Border(
-                        top: BorderSide(color: Colors.black45, width: 45),
-                        left: BorderSide(color: Colors.black45, width: 25),
-                        right: BorderSide(color: Colors.black45, width: 25),
-                        bottom: BorderSide(color: Colors.black45, width: 45),
+                        top: BorderSide(
+                            color: Colors.black45, width: borderTB.toDouble()),
+                        left: BorderSide(
+                            color: Colors.black45, width: borderLR.toDouble()),
+                        right: BorderSide(
+                            color: Colors.black45, width: borderLR.toDouble()),
+                        bottom: BorderSide(
+                            color: Colors.black45, width: borderTB.toDouble()),
                       ),
                     ),
                   ),
                 ),
+                // Red line
                 Positioned.fill(
-                  child: Divider(
-                    color: Colors.redAccent,
-                    thickness: 3,
-                    indent: 40,
-                    endIndent: 40,
-                  )
-                ),
+                    child: Divider(
+                  color: Colors.redAccent,
+                  thickness: 3,
+                  indent: borderLR + 20.0,
+                  endIndent: borderLR + 20.0,
+                )),
+                Positioned(
+                    child: FlatButton(
+                  onPressed: () {
+                    if (torchIcon == Icons.highlight) {
+                      torchIcon = Icons.highlight_off;
+                    } else {
+                      torchIcon = Icons.highlight;
+
+                    }
+                  },
+                  child: Icon(Icons.highlight_off),
+                )),
               ],
             ),
           );
