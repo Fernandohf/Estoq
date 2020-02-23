@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';
+import 'dart:io';
 
 // Settings options class
 class UserSettings {
@@ -59,6 +60,7 @@ class SessionData {
     this.name = name;
     this.key = Key(name);
     this.date = DateTime.now();
+    print(this);
   }
   SessionData.fromRecordSnapShot(var map) {
     this.name = map["name"];
@@ -102,7 +104,22 @@ class SessionData {
     });
   }
 
-  void delete() async {
+  Future<void> export(String delimiter) async {
+    final directory = await getExternalStorageDirectory();
+    final exportDir = await Directory('${directory.path}/Estoq/').create();
+    final file = File(exportDir.path + '${this.name}.txt');
+    String content = "";
+    for (final Map<String, Object> entry in this.entries) {
+      content += entry["barcode"].toString() +
+          delimiter +
+          entry["quantity"].toString() +
+          "\n";
+    }
+    await file.writeAsString(content);
+    print("Saving $content at ${file.path}");
+  }
+
+  Future<void> delete() async {
     Database db = await getDb();
     var sessionStore = getSessionStore();
 
@@ -136,8 +153,8 @@ class Sessions {
     this.data = sessions;
   }
 
-  void remove(SessionData session) {
-    this.data[session.key.toString()].delete();
+  Future<void> remove(SessionData session) async {
+    await this.data[session.key.toString()].delete();
     this.data.remove(session.key.toString());
   }
 
@@ -152,6 +169,12 @@ class Sessions {
     }
   }
 
+  void exportAll(String delimiter) {
+    for (final value in this.data.values) {
+      value.export(delimiter);
+    }
+  }
+
   void addEntry(SessionData session, Map<String, Object> entry) {
     this.data[session.key.toString()].entries.add(entry);
     this.data[session.key.toString()].save();
@@ -161,6 +184,7 @@ class Sessions {
     this.data[session.key.toString()].entries.removeAt(index);
     this.data[session.key.toString()].save();
   }
+
   void deleteAll() async {
     // On disk
     var db = await getDb();

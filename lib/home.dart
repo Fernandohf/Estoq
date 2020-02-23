@@ -10,7 +10,27 @@ class HomeScreen extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Estoq',
       home: Scaffold(
-          drawer: Drawer(
+          drawer: DrawerHome(),
+          appBar: AppBar(
+            title: Text(
+              'Estoq',
+              style: TextStyle(fontSize: 25),
+            ),
+            backgroundColor: Colors.blueAccent,
+          ),
+          body: SessionsBuilder(),
+          floatingActionButton: ActionButton()),
+    );
+  }
+}
+
+class DrawerHome extends StatelessWidget {
+  const DrawerHome({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Drawer(
             child: SafeArea(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -43,20 +63,24 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.restore),
-                    title: Text('Resetar'),
-                    onTap: () {
-                      Sessions data = Home.of(context).sessions;
-                      data.deleteAll();
-                      
-                    },
-                  ),
+                      leading: Icon(Icons.restore),
+                      title: Text('Resetar'),
+                      onTap: () {
+                        Sessions data = Home.of(context).sessions;
+                        data.deleteAll();
+                      }),
                   ListTile(
                     leading: Icon(Icons.arrow_upward),
                     title: Text('Exportar'),
                     onTap: () {
                       // Update the state of the app.
                       // ...
+                      Sessions sessions = Home.of(context).sessions;
+                      UserSettings settings = Home.of(context).settings;
+                      SnackBar snackExport = SnackBar(content: Text("${sessions.data.length} sessões foram exportadas"));
+                      sessions.exportAll(settings.delimiter);
+                      Navigator.of(context).pop();
+                      Scaffold.of(context).showSnackBar(snackExport);
                     },
                   ),
                   ListTile(
@@ -71,15 +95,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          appBar: AppBar(
-            title: Text(
-              'Estoq',
-              style: TextStyle(fontSize: 25),
-            ),
-            backgroundColor: Colors.blueAccent,
-          ),
-          body: SessionsBuilder(),
-          floatingActionButton: ActionButton()),
     );
   }
 }
@@ -90,10 +105,11 @@ class SessionsBuilder extends StatefulWidget {
 }
 
 class _SessionsBuilderState extends State<SessionsBuilder> {
+  Sessions sessions;
   @override
   Widget build(BuildContext context) {
-    Sessions sessions = Home.of(context).sessions;
-    if (sessions.data.isEmpty) {
+    sessions = Home.of(context).sessions;
+    if (this.sessions.data.isEmpty) {
       return Center(
           child: Text(
         "Nada aqui... 🙃",
@@ -111,6 +127,7 @@ class _SessionsBuilderState extends State<SessionsBuilder> {
 
 class SessionTileItem extends StatefulWidget {
   final SessionData sessionData;
+  final Key key = UniqueKey();
   SessionTileItem(this.sessionData);
 
   @override
@@ -199,44 +216,70 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
   Widget build(BuildContext context) {
     Sessions sessions = Home.of(context).sessions;
     formController.text = "Sessão_${sessions.data.length + 1}";
-    return SimpleDialog(title: Text("Nova Sessão"), children: <Widget>[
-      Padding(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-          child: Container(
-            child: Form(
-              child: TextFormField(
-                controller: formController,
-                decoration: InputDecoration(
-                    hintText: "Nome da Sessão",
-                    border: OutlineInputBorder(
-                      gapPadding: 3,
-                    )),
-              ),
-            ),
-          )),
-      ButtonBar(
-        alignment: MainAxisAlignment.end,
+    return SimpleDialog(
+        title: Text("Nova Sessão"),
+        contentPadding: EdgeInsets.all(8),
         children: <Widget>[
-          FlatButton(
-              onPressed: () => Navigator.pop(context),
-              child:
-                  Text('Cancelar', style: TextStyle(color: Colors.redAccent))),
-          FlatButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                // Create and save session
-                SessionData newSession =
-                    new SessionData.empty(formController.text);
-                Sessions sessions = Home.of(context).sessions;
-                sessions.add(newSession);
-                navigateToActiveSession(context, newSession);
-              },
-              child: Text(
-                'Iniciar',
-                style: TextStyle(color: Colors.blueAccent),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+              child: Container(
+                child: Form(
+                  child: TextFormField(
+                    controller: formController,
+                    decoration: InputDecoration(
+                        hintText: "Nome da Sessão",
+                        border: OutlineInputBorder(
+                          gapPadding: 3,
+                        )),
+                  ),
+                ),
               )),
-        ],
-      )
-    ]);
+          ButtonBar(
+            alignment: MainAxisAlignment.end,
+            children: <Widget>[
+              FlatButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancelar',
+                      style: TextStyle(color: Colors.redAccent))),
+              FlatButton(
+                  onPressed: () async {
+                    Sessions sessions = Home.of(context).sessions;
+                    // Create session
+                    SessionData newSession =
+                        new SessionData.empty(formController.text);
+                    // check if name is duplicated
+                    if (sessions.data.keys
+                        .contains(newSession.key.toString())) {
+                      showDialog(
+                        context: context,
+                        builder: (_) => new AlertDialog(
+                          title: Text(
+                            "Nome duplicado!",
+                          
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                          actions: <Widget>[
+                            FlatButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("OK")),
+                          ],
+                        ),
+                      );
+                    } else {
+                      Navigator.pop(context);
+
+                      sessions.add(newSession);
+                      navigateToActiveSession(context, newSession);
+                    }
+                  },
+                  child: Text(
+                    'Iniciar',
+                    style: TextStyle(color: Colors.blueAccent),
+                  )),
+            ],
+          )
+        ]);
   }
 }
