@@ -86,7 +86,7 @@ packages:
     source: hosted
     version: "0.4.1+4"
   firebase_ml_vision:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_ml_vision
       url: "https://pub.dartlang.org"
@@ -104,6 +104,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.5"
+  flutter_native_image:
+    dependency: "direct main"
+    description:
+      name: flutter_native_image
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.5+2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -280,6 +287,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.11"
+  torch:
+    dependency: "direct main"
+    description:
+      name: torch
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1"
   typed_data:
     dependency: transitive
     description:
