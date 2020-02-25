@@ -4,7 +4,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';
-import 'package:simple_permissions/simple_permissions.dart';
 import 'dart:io';
 
 // Settings options class
@@ -106,24 +105,18 @@ class SessionData {
   }
 
   Future<void> export(String delimiter) async {
-    final directory = '/storage/emulated/0';
-    PermissionStatus permissionResult =
-        await SimplePermissions.requestPermission(
-            Permission.WriteExternalStorage);
-    if (permissionResult == PermissionStatus.authorized) {
-      // code of read or write file in external storage (SD card)
-      final exportDir = await Directory(directory + '/Estoq/').create();
-      final file = File(exportDir.path + '${this.name}.txt');
-      String content = "";
-      for (final Map<String, Object> entry in this.entries) {
-        content += entry["barcode"].toString() +
-            delimiter +
-            entry["quantity"].toString() +
-            "\n";
-      }
-      await file.writeAsString(content);
-      print("Saving:\n $content at ${file.path}");
+    final directory = await getExternalStorageDirectory();
+    final exportDir = await Directory('${directory.path}/Estoq/').create();
+    final file = File(exportDir.path + '${this.name}.txt');
+    String content = "";
+    for (final Map<String, Object> entry in this.entries) {
+      content += entry["barcode"].toString() +
+          delimiter +
+          entry["quantity"].toString() +
+          "\n";
     }
+    await file.writeAsString(content);
+    print("Saving $content at ${file.path}");
   }
 
   Future<void> delete() async {

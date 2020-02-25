@@ -73,13 +73,13 @@ class DrawerHome extends StatelessWidget {
                   ListTile(
                     leading: Icon(Icons.arrow_upward),
                     title: Text('Exportar'),
-                    onTap: () {
+                    onTap: () async {
                       // Update the state of the app.
                       // ...
                       Sessions sessions = Home.of(context).sessions;
                       UserSettings settings = Home.of(context).settings;
                       SnackBar snackExport = SnackBar(content: Text("${sessions.data.length} sessões foram exportadas"));
-                      sessions.exportAll(settings.delimiter);
+                      await sessions.exportAll(settings.delimiter);
                       Navigator.of(context).pop();
                       Scaffold.of(context).showSnackBar(snackExport);
                     },

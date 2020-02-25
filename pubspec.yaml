@@ -28,7 +28,7 @@ dependencies:
   flutter_native_image: ^0.0.5
   lamp:
   camera:
-  simple_permissions:
+  # permission:
     # git:
     #   url: git://github.com/Renesanse/plugins.git # ^0.5.7+3 #
     #   path: packages/camera
