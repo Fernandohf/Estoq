@@ -6,7 +6,6 @@ import 'main.dart';
 class SessionScreen extends StatelessWidget {
   final SessionData sessionData;
   SessionScreen(this.sessionData);
-  
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +55,15 @@ class SessionScreen extends StatelessWidget {
               ),
               FlatButton(
                 onPressed: () {
+                  UserSettings settings = Home.of(context).settings;
+                  sessionData.export(settings.delimiter);
                   print("Export this session");
+                  SnackBar snackExport = SnackBar(
+                      duration: Duration(seconds: 2),
+                      content: Text("${sessionData.name} foi exportada"));
+                  Scaffold.of(context).showSnackBar(snackExport);
                 }, // TODO append to entry
+
                 child: Icon(Icons.arrow_upward, color: Colors.blueAccent),
               ),
               FlatButton(

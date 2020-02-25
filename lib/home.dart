@@ -58,6 +58,7 @@ class DrawerHome extends StatelessWidget {
                     leading: Icon(Icons.settings),
                     title: Text('Configurações'),
                     onTap: () {
+                      navigateToSettings(context);
                       // Update the state of the app.
                       // ...
                     },
@@ -141,41 +142,44 @@ class _SessionTileItemState extends State<SessionTileItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(.5),
-      child: Card(
-        color: Colors.blueGrey[50],
-        child: InkWell(
-          onTap: () {
-            navigateToSession(context, sessionData);
-          },
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      sessionData.name,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    Container(
-                      child: Text(
-                        sessionData.entries.isEmpty
-                            ? "Nada aqui..."
-                            : sessionData.entries[0].toString() + "\n" + "...",
+    return Hero(
+      tag: sessionData.name,
+      child: Padding(
+        padding: EdgeInsets.all(.5),
+        child: Card(
+          color: Colors.blueGrey[50],
+          child: InkWell(
+            onTap: () {
+              navigateToSession(context, sessionData);
+            },
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        sessionData.name,
                         textAlign: TextAlign.left,
                         style: TextStyle(
-                            color: Colors.blueGrey[300], fontSize: 12),
+                            color: Colors.blueGrey,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600),
                       ),
-                    )
-                  ]),
+                      Container(
+                        child: Text(
+                          sessionData.entries.isEmpty
+                              ? "Nada aqui..."
+                              : sessionData.entries[0].toString() + "\n" + "...",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                              color: Colors.blueGrey[300], fontSize: 12),
+                        ),
+                      )
+                    ]),
+              ),
             ),
           ),
         ),

@@ -9,7 +9,6 @@ import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'session_view.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
-import 'package:lamp/lamp.dart';
 import 'main.dart';
 
 Future<CameraDescription> getCamera() async {
