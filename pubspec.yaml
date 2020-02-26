@@ -20,14 +20,19 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: 
-  camera:
   path_provider:
   path:
   flutter_camera_ml_vision:
   firebase_ml_vision:
   sembast: ^2.1.3
   flutter_native_image: ^0.0.5
-  torch:
+  lamp:
+  camera:
+  # permission:
+    # git:
+    #   url: git://github.com/Renesanse/plugins.git # ^0.5.7+3 #
+    #   path: packages/camera
+      
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
