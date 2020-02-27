@@ -127,7 +127,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                    SessionCard(sessionData),
+                    SessionCard(sessionData, false),
                   ]))),
               Container(
                 height: 85,
@@ -226,6 +226,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
 
                               //
                               print("Adicionando entry");
+                              print(sessions.data);
                               setState(() {});
                             }
                           },

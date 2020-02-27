@@ -15,7 +15,7 @@ class SessionScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          SessionCard(sessionData),
+          SessionCard(sessionData, true),
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -54,7 +54,7 @@ class SessionScreen extends StatelessWidget {
                 ),
               ),
               FlatButton(
-                onPressed: () async{
+                onPressed: () async {
                   UserSettings settings = Home.of(context).settings;
                   await sessionData.export(settings.delimiter);
                   print("Export this session");
@@ -62,8 +62,7 @@ class SessionScreen extends StatelessWidget {
                       duration: Duration(seconds: 2),
                       content: Text("${sessionData.name} foi exportada"));
                   Scaffold.of(context).showSnackBar(snackExport);
-                }, 
-
+                },
                 child: Icon(Icons.arrow_upward, color: Colors.blueAccent),
               ),
               FlatButton(
@@ -82,15 +81,47 @@ class SessionScreen extends StatelessWidget {
 
 class SessionCard extends StatefulWidget {
   final SessionData sessionData;
-  SessionCard(this.sessionData);
+  final bool dismissable;
+  SessionCard(this.sessionData, this.dismissable);
 
   @override
-  _SessionCardState createState() => _SessionCardState(sessionData);
+  _SessionCardState createState() =>
+      _SessionCardState(sessionData, dismissable);
 }
 
 class _SessionCardState extends State<SessionCard> {
   SessionData sessionData;
-  _SessionCardState(this.sessionData);
+  final bool dismissable;
+
+  _SessionCardState(this.sessionData, this.dismissable);
+
+  Widget controlTile(bool dismiss, Map entry, int index) {
+    Widget row = Row(
+      children: <Widget>[
+        CardText(entry["barcode"], 4),
+        CardText(entry["quantity"].toString(), 1, aligment: TextAlign.center),
+      ],
+    );
+    if (dismiss) {
+      return Dismissible(
+          onDismissed: (DismissDirection direcion) {
+            setState(() {
+              Sessions sessions = Home.of(context).sessions;
+              // sessions.removeEntryAt(sessionData, index);
+              print(sessions.data);
+              sessionData.removeEntry(index);
+            });
+
+            Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    "(${entry["barcode"]}, ${entry["quantity"]}) dismissed")));
+          },
+          key: UniqueKey(),
+          child: row);
+    } else {
+      return row;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,56 +151,19 @@ class _SessionCardState extends State<SessionCard> {
                                   List<int> quantities;
                                   barcodes = sessionData.barcodes;
                                   quantities = sessionData.quantities;
-                                  return EntryTileItem({
-                                    "barcode": barcodes[index],
-                                    "quantity": quantities[index],
-                                  }, index, sessionData);
+                                  return controlTile(
+                                      dismissable,
+                                      {
+                                        "barcode": barcodes[index],
+                                        "quantity": quantities[index],
+                                      },
+                                      index);
                                 },
                                 itemCount: sessionData.entries.length,
                               )),
                   ),
                 ],
               )),
-        ),
-      ),
-    );
-  }
-}
-
-class EntryTileItem extends StatefulWidget {
-  final Map<String, Object> entry;
-  final int index;
-  final SessionData sessionData;
-  EntryTileItem(this.entry, this.index, this.sessionData);
-
-  @override
-  _EntryTileItemState createState() =>
-      _EntryTileItemState(this.entry, this.index, this.sessionData);
-}
-
-class _EntryTileItemState extends State<EntryTileItem> {
-  Map<String, Object> entry;
-  final int index;
-  SessionData sessionData;
-  _EntryTileItemState(this.entry, this.index, this.sessionData);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(1),
-      child: Dismissible(
-        onDismissed: (DismissDirection direcion) {
-          Sessions sessions = Home.of(context).sessions;
-          sessions.removeEntryAt(sessionData, index);
-          print(sessions.data);
-        },
-        key: UniqueKey(),
-        child: Row(
-          children: <Widget>[
-            CardText(entry["barcode"], 4),
-            CardText(entry["quantity"].toString(), 1,
-                aligment: TextAlign.center),
-          ],
         ),
       ),
     );
