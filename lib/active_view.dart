@@ -130,7 +130,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                     SessionCard(sessionData),
                   ]))),
               Container(
-                height: 85,
+                height: 60,
                 alignment: Alignment.bottomCenter,
                 child: Center(
                   child: Padding(
