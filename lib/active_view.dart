@@ -11,6 +11,44 @@ import 'session_view.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'main.dart';
 
+bool isBarcode(String barcode) {
+  // Verify weather the barcode is valid or not
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  bool checkLastDigit(String barcode) {
+    // EAN13 pattern
+    int sum1 = 0;
+    int sum2 = 0;
+    for (int i = 0; i < barcode.length - 1; i++) {
+      if (i % 2 == 0) {
+        sum2 += int.parse(barcode[i]);
+      } else {
+        sum1 += int.parse(barcode[i]);
+      }
+    }
+    int result = sum1 * 3 + sum2;
+    int lastDigit =
+        (int.parse(result.toString()[result.toString().length - 1]) - 10).abs();
+    if (lastDigit.toString() == barcode[barcode.length - 1]) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // check if is numeric and last digit checks
+  if (isNumeric(barcode) && checkLastDigit(barcode)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 Future<CameraDescription> getCamera() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
   // can be called before `runApp()`
@@ -207,9 +245,25 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                             // Not on camera tab
                             else {
                               // Check barcode
-                              lastBarcode = _textEditingController.text;
-                              // Empty text
-                              _textEditingController.text = "";
+                              if (isBarcode(_textEditingController.text)) {
+                                lastBarcode = _textEditingController.text;
+                                _textEditingController.text = "";
+                              } else {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => new AlertDialog(
+                                          title: Text(
+                                            "Código de barras inválido!",
+                                            style: TextStyle(
+                                                color: Colors.redAccent,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          titlePadding: EdgeInsets.all(5),
+                                        ));
+                                lastBarcode = "";
+                              }
                             }
                             if (lastBarcode.isNotEmpty) {
                               // Join data and save it
