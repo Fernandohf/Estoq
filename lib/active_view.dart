@@ -84,7 +84,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   TextEditingController _textEditingController;
   Future<void> _initializeControllerFuture;
   double previewWidth;
-  double previewHeight = 200;
+  double previewHeight = 150;
   int borderTB = 45;
   int borderLR = 0;
   // Add configuration to differenret formats
@@ -168,7 +168,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                     SessionCard(sessionData, false),
                   ]))),
               Container(
-                height: 85,
+                height: 60,
                 alignment: Alignment.bottomCenter,
                 child: Center(
                   child: Padding(
@@ -177,9 +177,13 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Text(
-                          'Quantidade',
-                          style: TextStyle(fontSize: 18),
+                        // Text(
+                        //   'Quant',
+                        //   style: TextStyle(fontSize: 14),
+                        // ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
+                          child: Icon(Icons.filter_9_plus,),
                         ),
                         QuantitySlider(updateSliderValue),
                         RaisedButton(
