@@ -169,9 +169,9 @@ class Sessions {
     }
   }
 
-  void exportAll(String delimiter) {
+  Future<void> exportAll(String delimiter) async {
     for (final value in this.data.values) {
-      value.export(delimiter);
+      await value.export(delimiter);
     }
   }
 
