@@ -31,71 +31,73 @@ class DrawerHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: Drawer(
-            child: SafeArea(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  DrawerHeader(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Status',
-                            style: TextStyle(fontSize: 25, color: Colors.white),
-                          ),
-                          Text(
-                            'Total de coletas:',
-                            style: TextStyle(
-                                fontSize: 15, color: Colors.grey[100]),
-                          ),
-                        ]),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text('Configurações'),
-                    onTap: () {
-                      navigateToSettings(context);
-                      // Update the state of the app.
-                      // ...
-                    },
-                  ),
-                  ListTile(
-                      leading: Icon(Icons.restore),
-                      title: Text('Resetar'),
-                      onTap: () {
-                        Sessions data = Home.of(context).sessions;
-                        data.deleteAll();
-                      }),
-                  ListTile(
-                    leading: Icon(Icons.arrow_upward),
-                    title: Text('Exportar'),
-                    onTap: () async {
-                      // Update the state of the app.
-                      // ...
-                      Sessions sessions = Home.of(context).sessions;
-                      UserSettings settings = Home.of(context).settings;
-                      SnackBar snackExport = SnackBar(content: Text("${sessions.data.length} sessões foram exportadas"));
-                      await sessions.exportAll(settings.delimiter);
-                      Navigator.of(context).pop();
-                      Scaffold.of(context).showSnackBar(snackExport);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.info),
-                    title: Text('Informações'),
-                    onTap: () {
-                      // Update the state of the app.
-                      // ...
-                    },
-                  ),
-                ],
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Status',
+                        style: TextStyle(fontSize: 25, color: Colors.white),
+                      ),
+                      Text(
+                        'Total de coletas:',
+                        style: TextStyle(fontSize: 15, color: Colors.grey[100]),
+                      ),
+                    ]),
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent,
+                ),
               ),
-            ),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Configurações'),
+                onTap: () {
+                  navigateToSettings(context);
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                  leading: Icon(Icons.restore),
+                  title: Text('Resetar'),
+                  onTap: () {
+                    Sessions data = Home.of(context).sessions;
+                    data.deleteAll();
+                  }),
+              ListTile(
+                leading: Icon(Icons.arrow_upward),
+                title: Text('Exportar'),
+                onTap: () async {
+                  // Update the state of the app.
+                  // ...
+                  Sessions sessions = Home.of(context).sessions;
+                  UserSettings settings = Home.of(context).settings;
+                  SnackBar snackExport = SnackBar(
+                      duration: Duration(seconds: 2),
+                      content: Text(
+                          "${sessions.data.length} sessões foram exportadas"));
+                  await sessions.exportAll(settings.delimiter);
+                  Navigator.of(context).pop();
+                  Scaffold.of(context).showSnackBar(snackExport);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.info),
+                title: Text('Informações'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+            ],
           ),
+        ),
+      ),
     );
   }
 }
@@ -172,7 +174,9 @@ class _SessionTileItemState extends State<SessionTileItem> {
                         child: Text(
                           sessionData.entries.isEmpty
                               ? "Nada aqui..."
-                              : sessionData.entries[0].toString() + "\n" + "...",
+                              : sessionData.entries[0].toString() +
+                                  "\n" +
+                                  "...",
                           textAlign: TextAlign.left,
                           style: TextStyle(
                               color: Colors.blueGrey[300], fontSize: 12),
@@ -259,7 +263,6 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
                         builder: (_) => new AlertDialog(
                           title: Text(
                             "Nome duplicado!",
-
                           ),
                           contentPadding: EdgeInsets.zero,
                           actions: <Widget>[

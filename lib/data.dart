@@ -87,6 +87,7 @@ class SessionData {
 
   void removeEntry(int index) {
     this.entries.removeAt(index);
+    this.save();
   }
 
   void save() async {
@@ -104,7 +105,7 @@ class SessionData {
     });
   }
 
-  Future<void> export(String delimiter) async {
+  Future<String> export(String delimiter) async {
     final directory = await getExternalStorageDirectory();
     final exportDir = await Directory('${directory.path}/Estoq/').create();
     final file = File(exportDir.path + '${this.name}.txt');
@@ -117,6 +118,7 @@ class SessionData {
     }
     await file.writeAsString(content);
     print("Saving $content at ${file.path}");
+    return file.path;
   }
 
   Future<void> delete() async {
