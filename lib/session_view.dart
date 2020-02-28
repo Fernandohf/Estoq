@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_share/flutter_share.dart';
 import 'data.dart';
 import 'navigation.dart';
 import 'main.dart';
@@ -52,6 +53,20 @@ class SessionScreen extends StatelessWidget {
                   Icons.delete,
                   color: Colors.redAccent,
                 ),
+              ),
+              FlatButton(
+                onPressed: () async {
+                  UserSettings settings = Home.of(context).settings;
+                  String filePath =
+                      await sessionData.export(settings.delimiter);
+                  await FlutterShare.shareFile(
+                    title: 'Compartilhe o arquivo exportado',
+                    text: '${sessionData.name}.txt',
+                    filePath: filePath,
+                  );
+                  print("Sharing text file $filePath");
+                },
+                child: Icon(Icons.share, color: Colors.blueAccent),
               ),
               FlatButton(
                 onPressed: () async {
@@ -113,6 +128,7 @@ class _SessionCardState extends State<SessionCard> {
             });
 
             Scaffold.of(context).showSnackBar(SnackBar(
+                duration: Duration(seconds: 2),
                 content: Text(
                     "(${entry["barcode"]}, ${entry["quantity"]}) dismissed")));
           },
