@@ -259,7 +259,7 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
                         builder: (_) => new AlertDialog(
                           title: Text(
                             "Nome duplicado!",
-                          
+
                           ),
                           contentPadding: EdgeInsets.zero,
                           actions: <Widget>[
