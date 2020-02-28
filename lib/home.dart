@@ -58,6 +58,7 @@ class DrawerHome extends StatelessWidget {
                     leading: Icon(Icons.settings),
                     title: Text('Configurações'),
                     onTap: () {
+                      navigateToSettings(context);
                       // Update the state of the app.
                       // ...
                     },
@@ -72,13 +73,13 @@ class DrawerHome extends StatelessWidget {
                   ListTile(
                     leading: Icon(Icons.arrow_upward),
                     title: Text('Exportar'),
-                    onTap: () {
+                    onTap: () async {
                       // Update the state of the app.
                       // ...
                       Sessions sessions = Home.of(context).sessions;
                       UserSettings settings = Home.of(context).settings;
                       SnackBar snackExport = SnackBar(content: Text("${sessions.data.length} sessões foram exportadas"));
-                      sessions.exportAll(settings.delimiter);
+                      await sessions.exportAll(settings.delimiter);
                       Navigator.of(context).pop();
                       Scaffold.of(context).showSnackBar(snackExport);
                     },
@@ -141,41 +142,44 @@ class _SessionTileItemState extends State<SessionTileItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(.5),
-      child: Card(
-        color: Colors.blueGrey[50],
-        child: InkWell(
-          onTap: () {
-            navigateToSession(context, sessionData);
-          },
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      sessionData.name,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    Container(
-                      child: Text(
-                        sessionData.entries.isEmpty
-                            ? "Nada aqui..."
-                            : sessionData.entries[0].toString() + "\n" + "...",
+    return Hero(
+      tag: sessionData.name,
+      child: Padding(
+        padding: EdgeInsets.all(.5),
+        child: Card(
+          color: Colors.blueGrey[50],
+          child: InkWell(
+            onTap: () {
+              navigateToSession(context, sessionData);
+            },
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        sessionData.name,
                         textAlign: TextAlign.left,
                         style: TextStyle(
-                            color: Colors.blueGrey[300], fontSize: 12),
+                            color: Colors.blueGrey,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600),
                       ),
-                    )
-                  ]),
+                      Container(
+                        child: Text(
+                          sessionData.entries.isEmpty
+                              ? "Nada aqui..."
+                              : sessionData.entries[0].toString() + "\n" + "...",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                              color: Colors.blueGrey[300], fontSize: 12),
+                        ),
+                      )
+                    ]),
+              ),
             ),
           ),
         ),
@@ -255,7 +259,7 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
                         builder: (_) => new AlertDialog(
                           title: Text(
                             "Nome duplicado!",
-                          
+
                           ),
                           contentPadding: EdgeInsets.zero,
                           actions: <Widget>[

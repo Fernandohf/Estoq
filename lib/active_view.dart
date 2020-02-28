@@ -9,7 +9,6 @@ import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'session_view.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
-import 'package:torch/torch.dart';
 import 'main.dart';
 
 Future<CameraDescription> getCamera() async {
@@ -81,12 +80,9 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
 
   @override
   void dispose() {
-    // Dispose of the controller when the widget is disposed.
     _camController.dispose();
     _tabController.dispose();
     _textEditingController.dispose();
-    // Sessions sessions = Home.of(context).sessions;
-    // sessions.saveAll();
     super.dispose();
   }
 
@@ -131,7 +127,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                    SessionCard(sessionData),
+                    SessionCard(sessionData, false),
                   ]))),
               Container(
                 height: 85,
@@ -203,21 +199,6 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                                 } else {
                                   lastBarcode = results.first.rawValue;
                                 }
-                                // showDialog(
-                                //     context: context,
-                                //     builder: (_) => new AlertDialog(
-                                //           actions: <Widget>[
-                                //             Image.file(File(path))
-                                //           ],
-                                //         ));
-                                // showDialog(
-                                //     context: context,
-                                //     builder: (_) => new AlertDialog(
-                                //           actions: <Widget>[
-                                //             Image.file(File(newPath))
-                                //           ],
-                                //         ));
-
                               } catch (e) {
                                 // If an error occurs, log the error to the console.
                                 print(e);
@@ -245,6 +226,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
 
                               //
                               print("Adicionando entry");
+                              print(sessions.data);
                               setState(() {});
                             }
                           },
@@ -318,6 +300,8 @@ class _BarcodeScannerState extends State {
   final Function updateSize;
   final int borderTB;
   final int borderLR;
+  IconData torchIcon = Icons.highlight;
+  bool torchOn = false;
   _BarcodeScannerState(
       this.camera,
       this._controller,
@@ -328,7 +312,6 @@ class _BarcodeScannerState extends State {
 
   @override
   Widget build(BuildContext context) {
-    IconData torchIcon = Icons.highlight;
     double width = MediaQuery.of(context).size.width;
     setState(() {
       updateSize(width);
@@ -387,17 +370,27 @@ class _BarcodeScannerState extends State {
                   indent: borderLR + 20.0,
                   endIndent: borderLR + 20.0,
                 )),
-                Positioned(
-                    child: FlatButton(
-                  onPressed: () {
-                    if (torchIcon == Icons.highlight) {
-                      torchIcon = Icons.highlight_off;
-                    } else {
-                      torchIcon = Icons.highlight;
-
-                    }
-                  },
-                  child: Icon(Icons.highlight_off),
+                // Torch widget TODO waiting for camera plugin update
+                Positioned.fill(
+                    child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        if (torchOn) {
+                          torchIcon = Icons.highlight_off;
+                          torchOn = false;
+                          // _controller.flash(torchOn);
+                          // Turn the torch on:
+                        } else {
+                          torchIcon = Icons.highlight;
+                          torchOn = true;
+                          // _controller.flash(torchOn);
+                        }
+                      });
+                    },
+                    child: Icon(torchIcon, color: Colors.white),
+                  ),
                 )),
               ],
             ),

@@ -1,16 +1,15 @@
-# estoq
+# Estoq
 
-A new Flutter project.
+A simple flutter project to control itens in inventory by scanning their barcode. Always make sure that your physical and digital inventory are in agreement.
 
-## Getting Started
+## Features
+- TODO
 
-This project is a starting point for a Flutter application.
+## Screenshoots
 
-A few resources to get you started if this is your first Flutter project:
+- TODO
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Build
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Install flutter and all is dependencies following the [online documentation](https://flutter.dev/docs).
+- Run `flutter build apk --split-per-abi`

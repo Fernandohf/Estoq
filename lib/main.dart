@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'home.dart';
 import 'data.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 // Main
 Future<void> main() async {
+  // Lock portrait
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Load user data
   WidgetsFlutterBinding.ensureInitialized();
   Sessions sessions = Sessions();
