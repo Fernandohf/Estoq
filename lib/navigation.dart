@@ -48,7 +48,7 @@ void navigateToSettings(BuildContext context) {
         // centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
-      body: SettingScreen()
+      body: SettingsScreen()
     );
   }));
 }

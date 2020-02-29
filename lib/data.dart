@@ -143,6 +143,29 @@ class SessionData {
 class Sessions {
   Map<String, SessionData> data = {};
 
+  String lastSession() {
+    // Return last recorded session
+    DateTime date;
+    for (final sessData in this.data.values) {
+      if (date == null) {
+        date = sessData.date;
+      } else if (sessData.date.isAfter(date)) {
+        date = sessData.date;
+      }
+    }
+    return "${date.year.toString()}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+  int totalItens() {
+    int itens = 0;
+    for (final sessData in this.data.values) {
+      for (final entry in sessData.entries) {
+        itens += entry["quantity"];
+      }
+    }
+    return itens;
+  }
+
   Future<void> loadFromDisk() async {
     Database db = await getDb();
     var sessionStore = getSessionStore();

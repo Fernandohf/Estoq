@@ -84,7 +84,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   TextEditingController _textEditingController;
   Future<void> _initializeControllerFuture;
   double previewWidth;
-  double previewHeight = 150;
+  double previewHeight = 175;
   int borderTB = 45;
   int borderLR = 0;
   // Add configuration to differenret formats
@@ -183,7 +183,9 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                         // ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
-                          child: Icon(Icons.filter_9_plus,),
+                          child: Icon(
+                            Icons.filter_9_plus,
+                          ),
                         ),
                         QuantitySlider(updateSliderValue),
                         RaisedButton(
@@ -235,6 +237,11 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                                                 "*Verifique se a image esta em foco.",
                                                 textAlign: TextAlign.end,
                                               ),
+                                              FlatButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Ok"))
                                             ],
                                           ));
                                   lastBarcode = "";
