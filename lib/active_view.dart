@@ -84,8 +84,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   TextEditingController _textEditingController;
   Future<void> _initializeControllerFuture;
   double previewWidth;
-  double previewHeight = 175;
-  int borderTB = 45;
+  double previewHeight = 150;
+  int borderTB = 30;
   int borderLR = 0;
   // Add configuration to differenret formats
   static final barcodeDetectorOptions = BarcodeDetectorOptions();
@@ -160,6 +160,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                 ),
               ),
               Expanded(
+                flex: 2,
                   child: SafeArea(
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -272,6 +273,13 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                                             textAlign: TextAlign.center,
                                           ),
                                           titlePadding: EdgeInsets.all(5),
+                                          actions: <Widget>[
+                                            FlatButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text("Ok"))
+                                          ],
                                         ));
                                 lastBarcode = "";
                               }
@@ -323,13 +331,31 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
 Future<File> resizeToPreview(String filePath, Size previewSize) async {
   ImageProperties properties =
       await FlutterNativeImage.getImageProperties(filePath);
-  double ratio = properties.height / previewSize.width;
-  Size scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
-  int xOff = ((properties.width - scaledSize.height) / 2).round();
-  int yOff = ((properties.height - scaledSize.width) / 2).round();
+  // Flip image if height > width
+  double ratio;
+  Size scaledSize;
+  int xOff;
+  int yOff;
+  int xDelta;
+  int yDelta;
+  if (properties.height > properties.width) {
+    ratio = properties.width / previewSize.width;
+    scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
+    yOff = ((properties.height - scaledSize.height) / 2).round();
+    xOff = ((properties.width - scaledSize.width) / 2).round();
+    xDelta = scaledSize.width.round();
+    yDelta = scaledSize.height.round();
+  } else {
+    ratio = properties.height / previewSize.width;
+    scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
+    xOff = ((properties.width - scaledSize.height) / 2).round();
+    yOff = ((properties.height - scaledSize.width) / 2).round();
+    xDelta = scaledSize.height.round();
+    yDelta = scaledSize.width.round();
+  }
 
-  File croppedFile = await FlutterNativeImage.cropImage(filePath, xOff, yOff,
-      scaledSize.height.round(), scaledSize.width.round());
+  File croppedFile =
+      await FlutterNativeImage.cropImage(filePath, xOff, yOff, xDelta, yDelta);
   print("Cropped image saved at: $croppedFile.path");
   return croppedFile;
 }
