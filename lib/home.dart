@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:estoq/data.dart';
 import 'package:estoq/main.dart';
-import 'package:flutter/material.dart';
 import 'navigation.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -29,6 +31,7 @@ class DrawerHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Sessions sessions = Home.of(context).sessions;
     return Container(
       child: Drawer(
         child: SafeArea(
@@ -41,12 +44,42 @@ class DrawerHome extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Status',
-                        style: TextStyle(fontSize: 25, color: Colors.white),
+                        'Estatísticas',
+                        style: TextStyle(fontSize: 26, color: Colors.white),
                       ),
-                      Text(
-                        'Total de coletas:',
-                        style: TextStyle(fontSize: 15, color: Colors.grey[100]),
+                      Expanded(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+                                child: Text(
+                                  'Última sessão: ${sessions.lastSession()}',
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.grey[100]),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                child: Text(
+                                  'Total de coletas: ${sessions.data.length}',
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.grey[100]),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+                                child: Text(
+                                  'Total de itens: ${sessions.totalItens()}',
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.grey[100]),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ),
+                            ]),
                       ),
                     ]),
                 decoration: BoxDecoration(
@@ -58,23 +91,19 @@ class DrawerHome extends StatelessWidget {
                 title: Text('Configurações'),
                 onTap: () {
                   navigateToSettings(context);
-                  // Update the state of the app.
-                  // ...
                 },
               ),
-              ListTile(
-                  leading: Icon(Icons.restore),
-                  title: Text('Resetar'),
-                  onTap: () {
-                    Sessions data = Home.of(context).sessions;
-                    data.deleteAll();
-                  }),
+              // ListTile(
+              //     leading: Icon(Icons.restore),
+              //     title: Text('Resetar'),
+              //     onTap: () {
+              //       Sessions data = Home.of(context).sessions;
+              //       data.deleteAll();
+              //     }),
               ListTile(
                 leading: Icon(Icons.arrow_upward),
                 title: Text('Exportar'),
                 onTap: () async {
-                  // Update the state of the app.
-                  // ...
                   Sessions sessions = Home.of(context).sessions;
                   UserSettings settings = Home.of(context).settings;
                   SnackBar snackExport = SnackBar(
@@ -90,8 +119,7 @@ class DrawerHome extends StatelessWidget {
                 leading: Icon(Icons.info),
                 title: Text('Informações'),
                 onTap: () {
-                  // Update the state of the app.
-                  // ...
+                  showGalleryAboutDialog(context);
                 },
               ),
             ],
@@ -109,6 +137,7 @@ class SessionsBuilder extends StatefulWidget {
 
 class _SessionsBuilderState extends State<SessionsBuilder> {
   Sessions sessions;
+
   @override
   Widget build(BuildContext context) {
     sessions = Home.of(context).sessions;
@@ -289,4 +318,82 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
           )
         ]);
   }
+}
+
+class _LinkTextSpan extends TextSpan {
+  // Beware!
+  //
+  // This class is only safe because the TapGestureRecognizer is not
+  // given a deadline and therefore never allocates any resources.
+  //
+  // In any other situation -- setting a deadline, using any of the less trivial
+  // recognizers, etc -- you would have to manage the gesture recognizer's
+  // lifetime and call dispose() when the TextSpan was no longer being rendered.
+  //
+  // Since TextSpan itself is @immutable, this means that you would have to
+  // manage the recognizer from outside the TextSpan, e.g. in the State of a
+  // stateful widget that then hands the recognizer to the TextSpan.
+
+  _LinkTextSpan({TextStyle style, String url, String text})
+      : super(
+            style: style,
+            text: text ?? url,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                launch(url, forceSafariVC: false);
+              });
+}
+
+void showGalleryAboutDialog(BuildContext context) {
+  final TextStyle aboutTextStyle = TextStyle(color: Colors.black, fontSize: 13);
+  final TextStyle linkStyle = TextStyle(color: Colors.blueAccent, fontSize: 13);
+
+  showAboutDialog(
+    context: context,
+    applicationVersion: 'Março 2020',
+    applicationIcon: new Image.asset(
+      "Media/icon/icon_edited.png",
+      width: 50,
+    ),
+    applicationLegalese: '©2020 Fernando Henrique',
+    children: <Widget>[
+      Padding(
+        padding: const EdgeInsets.only(top: 24.0),
+        child: RichText(
+          textAlign: TextAlign.justify,
+          text: TextSpan(
+            children: <TextSpan>[
+              TextSpan(
+                style: aboutTextStyle,
+                text:
+                    /* 'Estoq is an open-source project created with Flutter. It provides '
+                    'a simple interface to collect barcode and quantities of '
+                    'products to keep the digital and physical inventory in agreeent. \n'
+                    'Issues and PR are welcome.', */
+                    'Estoq é um projeto Flutter open source.'
+                    ' Consite em interface simples de coleta'
+                    ' e controle de códigos de barras para manter os invetários'
+                    ' físicos e digitais organizados.\n\n'
+                    'Problemas e PR são bem vindos. ',
+              ),
+              TextSpan(
+                  style: aboutTextStyle,
+                  text:
+                      /* '.\n\nTo see the source code for this app, visit the ', */
+                      'Para ver o código fonte desse aplicativo, visite o repositório '),
+              _LinkTextSpan(
+                style: linkStyle,
+                url: 'https://github.com/fernandohf/estoq',
+                text: 'Estoq Github',
+              ),
+              TextSpan(
+                style: aboutTextStyle,
+                text: '.',
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 }

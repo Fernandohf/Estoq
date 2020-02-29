@@ -28,6 +28,7 @@ dependencies:
   flutter_native_image: ^0.0.5
   flutter_share:
   camera:
+  url_launcher:
   # permission:
     # git:
     #   url: git://github.com/Renesanse/plugins.git # ^0.5.7+3 #
@@ -54,8 +55,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #  - images/a_dot_burr.jpeg
+  assets:
+    - Media/icon/
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
