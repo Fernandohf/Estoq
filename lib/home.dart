@@ -90,6 +90,7 @@ class DrawerHome extends StatelessWidget {
                 leading: Icon(Icons.settings),
                 title: Text('Configurações'),
                 onTap: () {
+                  Navigator.of(context).pop();
                   navigateToSettings(context);
                 },
               ),
