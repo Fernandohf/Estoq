@@ -11,6 +11,10 @@ import 'session_view.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'main.dart';
 
+// Features
+// TODO -  add barcode scanner support
+// TODO - wait flash support on flutter camera
+
 bool isBarcode(String barcode) {
   // Verify weather the barcode is valid or not
   bool isNumeric(String s) {
@@ -84,11 +88,125 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   TextEditingController _textEditingController;
   Future<void> _initializeControllerFuture;
   double previewWidth;
-  double previewHeight = 150;
+  double previewHeight = 160;
   int borderTB = 30;
   int borderLR = 0;
   // Add configuration to differenret formats
   static final barcodeDetectorOptions = BarcodeDetectorOptions();
+  
+  Future<void> addEntry(BuildContext context) async {
+    // Check if camera is active
+    if (_tabController.index == 0) {
+      // Take Picture
+      try {
+        await _initializeControllerFuture;
+        // Store the picture in the temp directory.
+
+        final path = join(
+          //  (await getTemporaryDirectory()).path,
+          (await getApplicationDocumentsDirectory()).path,
+          '${DateTime.now()}.png',
+        );
+
+        // Attempt to take a picture and log where it's been saved.
+        await _camController.takePicture(path);
+        Size previewSize =
+            Size(previewWidth - 2 * borderLR, previewHeight - 2 * borderTB);
+        File imgFie = await resizeToPreview(path, previewSize);
+        // String newPath = await _resizePhoto(
+        //     path, borderLR, borderTB, imgSize);
+
+        final image = FirebaseVisionImage.fromFile(imgFie);
+        List<Barcode> results = await barcodeDectector.detectInImage(image);
+        if (results.isEmpty) {
+          showDialog(
+              context: context,
+              builder: (_) => new AlertDialog(
+                    title: Text(
+                      "Código de barras não foi detectado!",
+                      style: TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    titlePadding: EdgeInsets.all(5),
+                    actions: <Widget>[
+                      Image.file(imgFie),
+                      Text(
+                        "*Verifique se a image esta em foco.",
+                        textAlign: TextAlign.end,
+                      ),
+                      FlatButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Ok"))
+                    ],
+                  ));
+          lastBarcode = "";
+        } else {
+          lastBarcode = results.first.rawValue;
+        }
+      } catch (e) {
+        // If an error occurs, log the error to the console.
+        print(e);
+      }
+    }
+    // Not on camera tab
+    else {
+      // Check barcode
+      if (isBarcode(_textEditingController.text)) {
+        lastBarcode = _textEditingController.text;
+        _textEditingController.text = "";
+      } else {
+        showDialog(
+            context: context,
+            builder: (_) => new AlertDialog(
+                  title: Text(
+                    "Código de barras inválido!",
+                    style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  titlePadding: EdgeInsets.all(5),
+                  actions: <Widget>[
+                    FlatButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("Ok"))
+                  ],
+                ));
+        lastBarcode = "";
+      }
+    }
+    if (lastBarcode.isNotEmpty) {
+      // Update
+      Map<String, Object> entry = {
+        "barcode": this.lastBarcode,
+        "quantity": this.sliderValue.toInt()
+      };
+      Sessions sessions = Home.of(context).sessions;
+      sessions.addEntry(sessionData, entry);
+      // Inform user and save it
+      SnackBar snackEntry = SnackBar(
+          duration: Duration(milliseconds: 500),
+          content: Text("Adicionado com sucesso!"));
+      Scaffold.of(context).showSnackBar(snackEntry);
+
+      // Log
+      print("Adicionando entry");
+      print(entry);
+      setState(() {
+        this.lastBarcode = lastBarcode;
+        this.sliderValue = sliderValue;
+      });
+    }
+  }
+
   final barcodeDectector =
       FirebaseVision.instance.barcodeDetector(barcodeDetectorOptions);
   _ActiveSessionScreenState(this.sessionData, this.camera);
@@ -160,14 +278,14 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                 ),
               ),
               Expanded(
-                flex: 2,
+                  flex: 2,
                   child: SafeArea(
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                    SessionCard(sessionData, false),
-                  ]))),
+                        SessionCard(sessionData, false),
+                      ]))),
               Container(
                 height: 60,
                 alignment: Alignment.bottomCenter,
@@ -189,126 +307,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                           ),
                         ),
                         QuantitySlider(updateSliderValue),
-                        RaisedButton(
-                          onPressed: () async {
-                            // Check if camera is active
-                            if (_tabController.index == 0) {
-                              // Take Picture
-                              try {
-                                await _initializeControllerFuture;
-                                // Store the picture in the temp directory.
-
-                                final path = join(
-                                  //  (await getTemporaryDirectory()).path,
-                                  (await getApplicationDocumentsDirectory())
-                                      .path,
-                                  '${DateTime.now()}.png',
-                                );
-
-                                // Attempt to take a picture and log where it's been saved.
-                                await _camController.takePicture(path);
-                                Size previewSize = Size(
-                                    previewWidth - 2 * borderLR,
-                                    previewHeight - 2 * borderTB);
-                                File imgFie =
-                                    await resizeToPreview(path, previewSize);
-                                // String newPath = await _resizePhoto(
-                                //     path, borderLR, borderTB, imgSize);
-
-                                final image =
-                                    FirebaseVisionImage.fromFile(imgFie);
-                                List<Barcode> results =
-                                    await barcodeDectector.detectInImage(image);
-                                if (results.isEmpty) {
-                                  showDialog(
-                                      context: context,
-                                      builder: (_) => new AlertDialog(
-                                            title: Text(
-                                              "Código de barras não foi detectado!",
-                                              style: TextStyle(
-                                                  color: Colors.redAccent,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            titlePadding: EdgeInsets.all(5),
-                                            actions: <Widget>[
-                                              Image.file(imgFie),
-                                              Text(
-                                                "*Verifique se a image esta em foco.",
-                                                textAlign: TextAlign.end,
-                                              ),
-                                              FlatButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text("Ok"))
-                                            ],
-                                          ));
-                                  lastBarcode = "";
-                                } else {
-                                  lastBarcode = results.first.rawValue;
-                                }
-                              } catch (e) {
-                                // If an error occurs, log the error to the console.
-                                print(e);
-                              }
-                            }
-                            // Not on camera tab
-                            else {
-                              // Check barcode
-                              if (isBarcode(_textEditingController.text)) {
-                                lastBarcode = _textEditingController.text;
-                                _textEditingController.text = "";
-                              } else {
-                                showDialog(
-                                    context: context,
-                                    builder: (_) => new AlertDialog(
-                                          title: Text(
-                                            "Código de barras inválido!",
-                                            style: TextStyle(
-                                                color: Colors.redAccent,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          titlePadding: EdgeInsets.all(5),
-                                          actions: <Widget>[
-                                            FlatButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text("Ok"))
-                                          ],
-                                        ));
-                                lastBarcode = "";
-                              }
-                            }
-                            if (lastBarcode.isNotEmpty) {
-                              // Join data and save it
-                              print("Slider:  $sliderValue");
-                              print("barcode:  $lastBarcode");
-
-                              // update
-                              Map<String, Object> entry = {
-                                "barcode": lastBarcode,
-                                "quantity": sliderValue.toInt()
-                              };
-                              Sessions sessions = Home.of(context).sessions;
-                              sessions.addEntry(sessionData, entry);
-
-                              //
-                              print("Adicionando entry");
-                              print(sessions.data);
-                              setState(() {});
-                            }
-                          },
-                          child: Text(
-                            "Adicionar",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          color: Colors.blueAccent,
-                        )
+                        AddButton(this.addEntry),
                       ],
                     ),
                   ),
@@ -321,12 +320,6 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     );
   }
 }
-// Future<String> extractBarcode(String imgPath){
-//   ImageProperties properties =
-//       await FlutterNativeImage.getImageProperties(imgPath);
-//       detector.detect(image)
-
-// }
 
 Future<File> resizeToPreview(String filePath, Size previewSize) async {
   ImageProperties properties =
@@ -338,6 +331,7 @@ Future<File> resizeToPreview(String filePath, Size previewSize) async {
   int yOff;
   int xDelta;
   int yDelta;
+  // Portrait or Landscape
   if (properties.height > properties.width) {
     ratio = properties.width / previewSize.width;
     scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
@@ -358,6 +352,25 @@ Future<File> resizeToPreview(String filePath, Size previewSize) async {
       await FlutterNativeImage.cropImage(filePath, xOff, yOff, xDelta, yDelta);
   print("Cropped image saved at: $croppedFile.path");
   return croppedFile;
+}
+
+class AddButton extends StatelessWidget {
+  final Function addFunction;
+  const AddButton(this.addFunction, {Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return RaisedButton(
+      onPressed: () {
+        this.addFunction(context);
+      },
+      child: Icon(
+        Icons.note_add,
+        color: Colors.white,
+      ),
+      color: Colors.blueAccent,
+    );
+  }
 }
 
 class BarcodeScanner extends StatefulWidget {
@@ -461,7 +474,6 @@ class _BarcodeScannerState extends State {
                   indent: borderLR + 20.0,
                   endIndent: borderLR + 20.0,
                 )),
-                // Torch widget TODO waiting for camera plugin update
                 Positioned.fill(
                     child: Align(
                   alignment: Alignment.bottomRight,
