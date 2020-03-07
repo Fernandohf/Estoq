@@ -13,6 +13,12 @@ A simple flutter project to control itens in inventory by scanning their barcode
 - Share `.txt` file
 - Languages: **pt-br**
 
+## Download
+
+The apk can be donwloaded in the [release tab](https://github.com/Fernandohf/Estoq/releases).
+
+Even though the app is written in flutter, the binaries are only available for **Android**. Feel free to compile it from the source and build the iOS app.
+
 ## Screenshots
 
 |                                                               Home                                                               |                                                  Itens view                                                  |                                            Barcode scanner                                            |                                               Manual input                                                |
