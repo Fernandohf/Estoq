@@ -7,7 +7,7 @@ A simple flutter project to control itens in inventory by scanning their barcode
 
 ## Features
 
-- Barcode scan
+- Barcode scanner
 - Manual input
 - Export to `.txt`
 - Share `.txt` file
@@ -15,7 +15,7 @@ A simple flutter project to control itens in inventory by scanning their barcode
 
 ## Download
 
-The apk can be donwloaded in the [release tab](https://github.com/Fernandohf/Estoq/releases).
+The apk can be downloaded in the [release tab](https://github.com/Fernandohf/Estoq/releases).
 
 Even though the app is written in flutter, the binaries are only available for **Android**. Feel free to compile it from the source and build the iOS app.
 
@@ -27,5 +27,6 @@ Even though the app is written in flutter, the binaries are only available for *
 
 ## Build
 
-- Install flutter and all is dependencies following the [online documentation](https://flutter.dev/docs).
-- Run `flutter build apk --split-per-abi`
+- Install flutter and all is dependencies following the [online documentation](https://flutter.dev/docs)
+- Run `flutter pub get` to download all the packages
+- Run `flutter build apk` to build the apk
