@@ -4,11 +4,22 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:estoq/data.dart';
 import 'package:estoq/main.dart';
 import 'navigation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // Localization
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en'),    // English
+        const Locale('pt-br'), // Brazilian Portuguese
+      ],
       debugShowCheckedModeBanner: false,
       title: 'Estoq',
       home: Scaffold(
