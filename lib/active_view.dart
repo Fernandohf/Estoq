@@ -93,7 +93,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   int borderLR = 0;
   // Add configuration to differenret formats
   static final barcodeDetectorOptions = BarcodeDetectorOptions();
-  
+
   Future<void> addEntry(BuildContext context) async {
     // Check if camera is active
     if (_tabController.index == 0) {
@@ -273,7 +273,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                         updateSize,
                         borderLR,
                         borderTB),
-                    ManualInputForm(_textEditingController),
+                    ManualInputForm(_textEditingController, addEntry),
                   ],
                 ),
               ),
@@ -547,10 +547,11 @@ class _QuantitySliderState extends State {
 // Define a custom Form widget.
 class ManualInputForm extends StatefulWidget {
   final TextEditingController textController;
-  ManualInputForm(this.textController);
+  final Function submittedFunction;
+  ManualInputForm(this.textController, this.submittedFunction);
   @override
   _ManualInputFormState createState() =>
-      _ManualInputFormState(this.textController);
+      _ManualInputFormState(this.textController, this.submittedFunction);
 }
 
 // This class holds the data related to the Form.
@@ -558,7 +559,8 @@ class _ManualInputFormState extends State<ManualInputForm> {
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
   final TextEditingController textController;
-  _ManualInputFormState(this.textController);
+  final Function submittedFunction;
+  _ManualInputFormState(this.textController, this.submittedFunction);
 
   @override
   Widget build(BuildContext context) {
@@ -567,6 +569,8 @@ class _ManualInputFormState extends State<ManualInputForm> {
       TextFormField(
         autofocus: true,
         keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.go,
+        onFieldSubmitted: this.submittedFunction,
         controller: textController,
         decoration: InputDecoration(labelText: "Código de Barras"),
       ),
