@@ -314,8 +314,18 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
                           child: Icon(
-                            FontAwesome5Brands.slack_hash,
+                            Entypo.box,
                             color: Colors.blueAccent,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                          child: Center(
+                            child: Icon(
+                              Octicons.x,
+                              size: 14.0,
+                              color: Colors.blueAccent,
+                            ),
                           ),
                         ),
                         QuantitySlider(updateSliderValue),
@@ -379,7 +389,7 @@ class AddButton extends StatelessWidget {
           this.addFunction(context);
         },
         child: Icon(
-          Icons.note_add,
+          Ionicons.md_barcode,
           color: Colors.white,
         ),
         backgroundColor: Colors.blueAccent,
