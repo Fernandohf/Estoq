@@ -7,8 +7,9 @@ A simple flutter project to control itens in inventory by scanning their barcode
 
 ## Features
 
-- Barcode scanner
+- Scanner with camera
 - Manual input
+- Support USB scanner
 - Export to `.txt`
 - Share `.txt` file
 - Languages: **pt-br**
