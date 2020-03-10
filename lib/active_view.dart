@@ -10,21 +10,22 @@ import 'package:path_provider/path_provider.dart';
 import 'session_view.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'main.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
 // TODO -  add barcode scanner support
 // TODO - wait flash support on flutter camera
 
-bool isBarcode(String barcode) {
+String isBarcode(String barcode) {
   // Verify weather the barcode is valid or not
-  bool isNumeric(String s) {
-    if (s == null) {
-      return false;
-    }
-    return double.tryParse(s) != null;
-  }
+  // bool isNumeric(String s) {
+  //   if (s == null) {
+  //     return false;
+  //   }
+  //   return double.tryParse(s) != null;
+  // }
 
-  bool checkLastDigit(String barcode) {
+  String checkLastDigit(String barcode) {
     // EAN13 pattern
     int sum1 = 0;
     int sum2 = 0;
@@ -38,18 +39,22 @@ bool isBarcode(String barcode) {
     int result = sum1 * 3 + sum2;
     int lastDigit =
         (int.parse(result.toString()[result.toString().length - 1]) - 10).abs();
-    if (lastDigit.toString() == barcode[barcode.length - 1]) {
-      return true;
-    } else {
-      return false;
-    }
+    return lastDigit.toString();
   }
 
+  String checkDigit = checkLastDigit(barcode);
+  String lastDigit = barcode.isEmpty ? "" : barcode[barcode.length - 1];
   // check if is numeric and last digit checks
-  if (isNumeric(barcode) && checkLastDigit(barcode)) {
-    return true;
+  if (barcode.isEmpty) {
+    return "Vazio";
+  } else if (barcode.length < 13) {
+    return "Muito curto";
+  } else if (barcode.length > 13) {
+    return "Muito longo";
+  } else if (checkDigit != lastDigit) {
+    return "Digito verificador $lastDigit inválido, deveria ser $checkDigit";
   } else {
-    return false;
+    return null;
   }
 }
 
@@ -153,33 +158,40 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
         print(e);
       }
     }
-    // Not on camera tab
+    // On manual input
     else {
       // Check barcode
-      if (isBarcode(_textEditingController.text)) {
+      String barcodeMsg = isBarcode(_textEditingController.text);
+      if (barcodeMsg == null) {
         lastBarcode = _textEditingController.text;
         _textEditingController.text = "";
       } else {
         showDialog(
             context: context,
             builder: (_) => new AlertDialog(
-                  title: Text(
-                    "Código de barras inválido!",
-                    style: TextStyle(
-                        color: Colors.redAccent,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  titlePadding: EdgeInsets.all(5),
-                  actions: <Widget>[
-                    FlatButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("Ok"))
-                  ],
-                ));
+                    title: Text(
+                      "Código de barras inválido\n",
+                    ),
+                    titlePadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    actions: <Widget>[
+                      Column(
+                        children: <Widget>[
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                              child: Text(
+                                barcodeMsg,
+                                textAlign: TextAlign.left,
+                              )),
+                          Align(
+                              alignment: Alignment.centerRight,
+                              child: FlatButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Ok")))
+                        ],
+                      )
+                    ]));
         lastBarcode = "";
       }
     }
@@ -303,11 +315,11 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
                           child: Icon(
-                            Icons.filter_9_plus,
+                            FontAwesome5Brands.slack_hash,
+                            color: Colors.blueAccent,
                           ),
                         ),
                         QuantitySlider(updateSliderValue),
-                        AddButton(this.addEntry),
                       ],
                     ),
                   ),
@@ -316,6 +328,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
             ],
           ),
         ),
+        floatingActionButton: AddButton(this.addEntry),
       ),
     );
   }
@@ -360,15 +373,18 @@ class AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RaisedButton(
-      onPressed: () {
-        this.addFunction(context);
-      },
-      child: Icon(
-        Icons.note_add,
-        color: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 60.0),
+      child: FloatingActionButton(
+        onPressed: () {
+          this.addFunction(context);
+        },
+        child: Icon(
+          Icons.note_add,
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.blueAccent,
       ),
-      color: Colors.blueAccent,
     );
   }
 }
@@ -564,16 +580,25 @@ class _ManualInputFormState extends State<ManualInputForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-        child: Column(children: <Widget>[
-      TextFormField(
-        autofocus: true,
-        keyboardType: TextInputType.number,
-        textInputAction: TextInputAction.go,
-        onFieldSubmitted: this.submittedFunction,
-        controller: textController,
-        decoration: InputDecoration(labelText: "Código de Barras"),
-      ),
-    ]));
+    return TextFormField(
+      autofocus: true,
+      maxLines: null,
+      maxLength: 13,
+      inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
+      onFieldSubmitted: (String value) {
+        print("$value");
+        this.submittedFunction(context);
+      },
+      autovalidate: true,
+      validator: (String value) {
+        return isBarcode(value);
+      },
+
+      //onFieldSubmitted: (String value){this.submittedFunction(context);},
+      controller: textController,
+      decoration: InputDecoration(labelText: "Código de Barras"),
+    );
   }
 }
