@@ -26,8 +26,8 @@ Even though the app is written in flutter, the binaries are only tested and prov
 | :------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------: |
 | ![Home screen](https://github.com/Fernandohf/Estoq/blob/master/Media/screenshots/01_home.png?raw=true "App home screen picture") | ![Session screen](https://github.com/Fernandohf/Estoq/blob/master/Media/screenshots/02_session.png?raw=true) | ![Scanner](https://github.com/Fernandohf/Estoq/blob/master/Media/screenshots/03_scanner.png?raw=true) | ![Manual input](https://github.com/Fernandohf/Estoq/blob/master/Media/screenshots/04_manual.png?raw=true) |
 
-## Build
+## Build Instructions
 
 - Install flutter and all is dependencies following the [online documentation](https://flutter.dev/docs)
-- Run `flutter pub get` to download all the packages
+- Run `flutter pub get` to download all the packages on `pubspec.yaml`
 - Run `flutter build apk` to build the apk
