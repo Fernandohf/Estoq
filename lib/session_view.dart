@@ -128,7 +128,7 @@ class _SessionCardState extends State<SessionCard> {
             });
 
             Scaffold.of(context).showSnackBar(SnackBar(
-                duration: Duration(seconds: 2),
+                duration: Duration(milliseconds: 500),
                 content: Text(
                     "(${entry["barcode"]}, ${entry["quantity"]}) dismissed")));
           },
