@@ -13,7 +13,6 @@ import 'main.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
-// TODO -  add barcode scanner support
 // TODO - wait flash support on flutter camera
 
 String isBarcode(String barcode) {
@@ -588,7 +587,6 @@ class _ManualInputFormState extends State<ManualInputForm> {
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (String value) {
-        print("$value");
         this.submittedFunction(context);
       },
       autovalidate: true,
