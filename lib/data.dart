@@ -40,10 +40,13 @@ class UserSettings {
 
     // Easy to put/get simple values or map
     await db.transaction((txn) async {
-      await store.record('delimiter').put(txn, this.delimiter);
-      await store.record('exportPath').put(txn, this.exportPath);
-      await store.record('minQuant').put(txn, this.minQuant);
-      await store.record('maxQuant').put(txn, this.maxQuant);
+      Map<String, Object> map = {
+        'delimiter': this.delimiter,
+        'exportPath': this.exportPath,
+        'minQuant': this.minQuant,
+        'maxQuant': this.maxQuant,
+      };
+      await store.record('settings').put(txn, map);
     });
   }
 
@@ -56,11 +59,10 @@ class UserSettings {
 
   Map toMap() {
     return {
-      "delimiter": this.delimiter,
-      "exportPath": this.exportPath,
-      "minQuant": this.minQuant,
-      "maxQuant": this.maxQuant,
-
+      "delimiter": delimiter,
+      "exportPath": exportPath,
+      "minQuant": minQuant,
+      "maxQuant": maxQuant,
     };
   }
 }
@@ -253,12 +255,12 @@ Future<UserSettings> loadUserSettings() async {
   Database db = await getDb();
   var store = StoreRef.main();
 
-  var results = await store.find(db);
+  var results = await store.record('settings').get(db) as Map<String, Object>;
 
   // Only singletons
-  if (results.isEmpty) {
+  if (results == null) {
     return UserSettings();
   } else {
-    return UserSettings.fromMap(results.first);
+    return UserSettings.fromMap(results);
   }
 }
