@@ -10,11 +10,19 @@ import 'dart:io';
 class UserSettings {
   String delimiter;
   String exportPath;
+  int minQuant;
+  int maxQuant;
 
-  UserSettings({this.delimiter = ",", this.exportPath = 'estoq/sessions'});
+  UserSettings(
+      {this.delimiter = ";",
+      this.exportPath = 'estoq/sessions',
+      this.minQuant = 1,
+      this.maxQuant = 10});
   UserSettings.fromMap(var map) {
     this.delimiter = map["delimiter"];
     this.exportPath = map["exportPath"];
+    this.minQuant = map["minQuant"];
+    this.maxQuant = map["maxQuant"];
   }
 
   set changeDelimiter(String value) {
@@ -34,17 +42,25 @@ class UserSettings {
     await db.transaction((txn) async {
       await store.record('delimiter').put(txn, this.delimiter);
       await store.record('exportPath').put(txn, this.exportPath);
+      await store.record('minQuant').put(txn, this.minQuant);
+      await store.record('maxQuant').put(txn, this.maxQuant);
     });
   }
 
   String toString() {
-    return "delimiter: $delimiter, \n exportPath: $exportPath,";
+    return """delimiter: $delimiter, \n
+              exportPath: $exportPath, \n
+              minQuant: $minQuant, \n
+              maxQuant: $maxQuant,""";
   }
 
   Map toMap() {
     return {
-      "delimiter": delimiter,
-      "exportPath": exportPath,
+      "delimiter": this.delimiter,
+      "exportPath": this.exportPath,
+      "minQuant": this.minQuant,
+      "maxQuant": this.maxQuant,
+
     };
   }
 }
