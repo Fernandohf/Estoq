@@ -1,4 +1,4 @@
-# <img src=https://raw.githubusercontent.com/Fernandohf/Estoq/master/Media/icon/icon_edited.png height=40> Estoq
+# <a href=https://github.com/Fernandohf/Estoq/releases><img src=https://raw.githubusercontent.com/Fernandohf/Estoq/master/Media/icon/icon_edited.png height=40></a> Estoq
 
 [![GitHub license](https://img.shields.io/github/license/Fernandohf/Estoq)](https://github.com/Fernandohf/Estoq/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/Fernandohf/Estoq)](https://github.com/Fernandohf/Estoq/issues)
