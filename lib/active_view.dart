@@ -38,7 +38,7 @@ String isBarcode(String barcode) {
     int result = sum1 * 3 + sum2;
     int lastDigit =
         (int.parse(result.toString()[result.toString().length - 1]) - 10).abs();
-    return lastDigit.toString();
+    return lastDigit.toString()[lastDigit.toString().length-1];
   }
 
   String checkDigit = checkLastDigit(barcode);
