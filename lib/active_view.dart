@@ -38,7 +38,7 @@ String isBarcode(String barcode) {
     int result = sum1 * 3 + sum2;
     int lastDigit =
         (int.parse(result.toString()[result.toString().length - 1]) - 10).abs();
-    return lastDigit.toString();
+    return lastDigit.toString()[lastDigit.toString().length - 1];
   }
 
   String checkDigit = checkLastDigit(barcode);
@@ -85,7 +85,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   final CameraDescription camera;
   SessionData sessionData;
   String lastBarcode = "";
-  int sliderValue = 1;
+  int sliderValue;
   int activeTab = 0;
   CameraController _camController;
   TabController _tabController;
@@ -543,17 +543,21 @@ class QuantitySlider extends StatefulWidget {
 
 class _QuantitySliderState extends State {
   Function valueCallback;
-  int _value = 1;
+  int _value;
   _QuantitySliderState(this.valueCallback);
 
   @override
   Widget build(BuildContext context) {
+    UserSettings settings = Home.of(context).settings;
+    if (_value == null) {
+      _value = settings.minQuant;
+    }
     return Expanded(
         child: Slider(
             value: _value.toDouble(),
-            min: 1.0,
-            max: 10.0,
-            divisions: 9,
+            min: settings.minQuant.toDouble(),
+            max: settings.maxQuant.toDouble(),
+            divisions: settings.maxQuant - settings.minQuant,
             activeColor: Colors.blueAccent,
             inactiveColor: Colors.lightBlueAccent,
             label: '$_value',

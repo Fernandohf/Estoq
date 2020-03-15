@@ -10,11 +10,19 @@ import 'dart:io';
 class UserSettings {
   String delimiter;
   String exportPath;
+  int minQuant;
+  int maxQuant;
 
-  UserSettings({this.delimiter = ",", this.exportPath = 'estoq/sessions'});
+  UserSettings(
+      {this.delimiter = ";",
+      this.exportPath = 'estoq/sessions',
+      this.minQuant = 1,
+      this.maxQuant = 10});
   UserSettings.fromMap(var map) {
     this.delimiter = map["delimiter"];
     this.exportPath = map["exportPath"];
+    this.minQuant = map["minQuant"];
+    this.maxQuant = map["maxQuant"];
   }
 
   set changeDelimiter(String value) {
@@ -32,19 +40,29 @@ class UserSettings {
 
     // Easy to put/get simple values or map
     await db.transaction((txn) async {
-      await store.record('delimiter').put(txn, this.delimiter);
-      await store.record('exportPath').put(txn, this.exportPath);
+      Map<String, Object> map = {
+        'delimiter': this.delimiter,
+        'exportPath': this.exportPath,
+        'minQuant': this.minQuant,
+        'maxQuant': this.maxQuant,
+      };
+      await store.record('settings').put(txn, map);
     });
   }
 
   String toString() {
-    return "delimiter: $delimiter, \n exportPath: $exportPath,";
+    return """delimiter: $delimiter, \n
+              exportPath: $exportPath, \n
+              minQuant: $minQuant, \n
+              maxQuant: $maxQuant,""";
   }
 
   Map toMap() {
     return {
       "delimiter": delimiter,
       "exportPath": exportPath,
+      "minQuant": minQuant,
+      "maxQuant": maxQuant,
     };
   }
 }
@@ -237,12 +255,12 @@ Future<UserSettings> loadUserSettings() async {
   Database db = await getDb();
   var store = StoreRef.main();
 
-  var results = await store.find(db);
+  var results = await store.record('settings').get(db) as Map<String, Object>;
 
   // Only singletons
-  if (results.isEmpty) {
+  if (results == null) {
     return UserSettings();
   } else {
-    return UserSettings.fromMap(results.first);
+    return UserSettings.fromMap(results);
   }
 }
