@@ -14,16 +14,9 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
 // TODO - wait flash support on flutter camera
+// TODO - Add quantity number on quantity Icon,may remove tip on slider
 
 String isBarcode(String barcode) {
-  // Verify weather the barcode is valid or not
-  // bool isNumeric(String s) {
-  //   if (s == null) {
-  //     return false;
-  //   }
-  //   return double.tryParse(s) != null;
-  // }
-
   String checkLastDigit(String barcode) {
     // EAN13 pattern
     int sum1 = 0;
