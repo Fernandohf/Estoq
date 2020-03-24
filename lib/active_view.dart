@@ -14,7 +14,6 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
 // TODO - wait flash support on flutter camera
-// TODO - Add quantity number on quantity Icon,may remove tip on slider
 
 String isBarcode(String barcode) {
   String checkLastDigit(String barcode) {
@@ -305,11 +304,11 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                         //   style: TextStyle(fontSize: 14),
                         // ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
-                          child: Icon(
-                            Entypo.box,
-                            color: Colors.blueAccent,
-                          ),
+                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                          child: Text(sliderValue.toString(),
+                              style: TextStyle(
+                                color: Colors.blueAccent,
+                              )),
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
@@ -319,6 +318,13 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                               size: 14.0,
                               color: Colors.blueAccent,
                             ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
+                          child: Icon(
+                            Entypo.box,
+                            color: Colors.blueAccent,
                           ),
                         ),
                         QuantitySlider(updateSliderValue),
