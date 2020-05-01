@@ -14,6 +14,9 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
 // TODO - wait flash support on flutter camera
+// Add option to weather check or not barcode - check
+// Add clear button on manual input - check
+// Add option to save reference or barcode
 
 String isBarcode(String barcode) {
   String checkLastDigit(String barcode) {
@@ -151,40 +154,40 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     }
     // On manual input
     else {
-      // Check barcode
-      String barcodeMsg = isBarcode(_textEditingController.text);
-      if (barcodeMsg == null) {
-        lastBarcode = _textEditingController.text;
-        _textEditingController.text = "";
-      } else {
-        showDialog(
-            context: context,
-            builder: (_) => new AlertDialog(
-                    title: Text(
-                      "Código de barras inválido\n",
-                    ),
-                    titlePadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    actions: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          Padding(
-                              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                              child: Text(
-                                barcodeMsg,
-                                textAlign: TextAlign.left,
-                              )),
-                          Align(
-                              alignment: Alignment.centerRight,
-                              child: FlatButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Ok")))
-                        ],
-                      )
-                    ]));
-        lastBarcode = "";
-      }
+      // // Check barcode
+      // String barcodeMsg = isBarcode(_textEditingController.text);
+      // if (barcodeMsg == null) {
+      lastBarcode = _textEditingController.text;
+      _textEditingController.text = "";
+      // } else {
+      //   showDialog(
+      //       context: context,
+      //       builder: (_) => new AlertDialog(
+      //               title: Text(
+      //                 "Código de barras inválido\n",
+      //               ),
+      //               titlePadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+      //               actions: <Widget>[
+      //                 Column(
+      //                   children: <Widget>[
+      //                     Padding(
+      //                         padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+      //                         child: Text(
+      //                           barcodeMsg,
+      //                           textAlign: TextAlign.left,
+      //                         )),
+      //                     Align(
+      //                         alignment: Alignment.centerRight,
+      //                         child: FlatButton(
+      //                             onPressed: () {
+      //                               Navigator.of(context).pop();
+      //                             },
+      //                             child: Text("Ok")))
+      //                   ],
+      //                 )
+      //               ]));
+      //   lastBarcode = "";
+      // }
     }
     if (lastBarcode.isNotEmpty) {
       // Update
@@ -196,7 +199,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
       sessions.addEntry(sessionData, entry);
       // Inform user and save it
       SnackBar snackEntry = SnackBar(
-          duration: Duration(milliseconds: 500),
+          duration: Duration(milliseconds: 400),
           content: Text("Adicionado com sucesso!"));
       Scaffold.of(context).showSnackBar(snackEntry);
 
@@ -255,8 +258,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
           bottom: TabBar(
             controller: _tabController,
             tabs: [
-              Tab(icon: Icon(Icons.camera_alt), text: "Scanear"),
-              Tab(icon: Icon(Icons.space_bar), text: "Manual"),
+              Tab(icon: Icon(Icons.camera_alt), text: "Camera"),
+              Tab(icon: Icon(Icons.space_bar), text: "Manual / Scanner USB"),
             ],
           ),
           title: Text(sessionData.name),
@@ -289,50 +292,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                           children: <Widget>[
                         SessionCard(sessionData, false),
                       ]))),
-              Container(
-                height: 60,
-                alignment: Alignment.bottomCenter,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        // Text(
-                        //   'Quant',
-                        //   style: TextStyle(fontSize: 14),
-                        // ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                          child: Text(sliderValue.toString(),
-                              style: TextStyle(
-                                color: Colors.blueAccent,
-                              )),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                          child: Center(
-                            child: Icon(
-                              Octicons.x,
-                              size: 14.0,
-                              color: Colors.blueAccent,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
-                          child: Icon(
-                            Entypo.box,
-                            color: Colors.blueAccent,
-                          ),
-                        ),
-                        QuantitySlider(updateSliderValue),
-                      ],
-                    ),
-                  ),
-                ),
-              )
+              BottonSlider(updateSliderValue),
             ],
           ),
         ),
@@ -531,19 +491,19 @@ class _BarcodeScannerState extends State {
   }
 }
 
-class QuantitySlider extends StatefulWidget {
+class BottonSlider extends StatefulWidget {
   final Function valueCallback;
-  QuantitySlider(this.valueCallback);
+  BottonSlider(this.valueCallback);
   @override
-  _QuantitySliderState createState() {
-    return _QuantitySliderState(valueCallback);
+  _BottonSliderState createState() {
+    return _BottonSliderState(valueCallback);
   }
 }
 
-class _QuantitySliderState extends State {
+class _BottonSliderState extends State {
   Function valueCallback;
   int _value;
-  _QuantitySliderState(this.valueCallback);
+  _BottonSliderState(this.valueCallback);
 
   @override
   Widget build(BuildContext context) {
@@ -551,24 +511,60 @@ class _QuantitySliderState extends State {
     if (_value == null) {
       _value = settings.minQuant;
     }
-    return Expanded(
-        child: Slider(
-            value: _value.toDouble(),
-            min: settings.minQuant.toDouble(),
-            max: settings.maxQuant.toDouble(),
-            divisions: settings.maxQuant - settings.minQuant,
-            activeColor: Colors.blueAccent,
-            inactiveColor: Colors.lightBlueAccent,
-            label: '$_value',
-            onChanged: (double newValue) {
-              setState(() {
-                _value = newValue.round();
-                valueCallback(_value);
-              });
-            },
-            semanticFormatterCallback: (double newValue) {
-              return '${newValue.round()}';
-            }));
+    return Container(
+        height: 60,
+        alignment: Alignment.bottomCenter,
+        child: Center(
+            child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                        child: Text(_value.toString(),
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                            )),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                        child: Center(
+                          child: Icon(
+                            Octicons.x,
+                            size: 14.0,
+                            color: Colors.blueAccent,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
+                        child: Icon(
+                          Entypo.box,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                      Expanded(
+                        child: Slider(
+                            value: _value.toDouble(),
+                            min: settings.minQuant.toDouble(),
+                            max: settings.maxQuant.toDouble(),
+                            divisions: settings.maxQuant - settings.minQuant,
+                            activeColor: Colors.blueAccent,
+                            inactiveColor: Colors.lightBlueAccent,
+                            label: '$_value',
+                            onChanged: (double newValue) {
+                              setState(() {
+                                _value = newValue.round();
+                                valueCallback(_value);
+                              });
+                            },
+                            semanticFormatterCallback: (double newValue) {
+                              return '${newValue.round()}';
+                            }),
+                      ),
+                    ]))));
   }
 }
 
@@ -592,6 +588,7 @@ class _ManualInputFormState extends State<ManualInputForm> {
 
   @override
   Widget build(BuildContext context) {
+    UserSettings settings = Home.of(context).settings;
     return TextFormField(
       autofocus: true,
       maxLines: null,
@@ -604,12 +601,18 @@ class _ManualInputFormState extends State<ManualInputForm> {
       },
       autovalidate: true,
       validator: (String value) {
-        return isBarcode(value);
+        return settings.checkBarcode ? isBarcode(value) : null;
       },
 
       //onFieldSubmitted: (String value){this.submittedFunction(context);},
       controller: textController,
-      decoration: InputDecoration(labelText: "Código de Barras"),
+      decoration: InputDecoration(
+          labelText: "Código de Barras",
+          suffixIcon: IconButton(
+              icon: Icon(Icons.cancel),
+              onPressed: () {
+                textController.text = "";
+              })),
     );
   }
 }
