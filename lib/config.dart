@@ -14,11 +14,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String delimiter;
   int minQuant;
   int maxQuant;
+  bool checkBarcode;
   TextEditingController minController = TextEditingController();
   TextEditingController maxController = TextEditingController();
   SnackBar snackSavedSettings = SnackBar(
       duration: Duration(milliseconds: 800),
       content: Text("Configurações salvas!"));
+  
   String minInputValidator(String value) {
     if (value == "")
       return "Valor inválido";
@@ -45,6 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     maxController.text = settings.maxQuant.toString();
     minQuant = int.parse(minController.text);
     maxQuant = int.parse(maxController.text);
+    checkBarcode = settings.checkBarcode;
     return Padding(
         padding: EdgeInsets.all(4),
         child: ListView(
@@ -100,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Min
             ListTile(
               contentPadding: EdgeInsets.all(4),
-              title: Text("Quantidae Mínima"),
+              title: Text("Quantidade Mínima"),
               subtitle: Text("Valor mínimo do slider de quantidade"),
               trailing: Container(
                 width: 84,
@@ -129,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Max
             ListTile(
               contentPadding: EdgeInsets.all(4),
-              title: Text("Quantidae Máxima"),
+              title: Text("Quantidade Máxima"),
               subtitle: Text("Valor máximo do slider de quantidade"),
               trailing: Container(
                 width: 84,
@@ -149,6 +152,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(
                       () {
                         maxQuant = settings.maxQuant;
+                      },
+                    );
+                    Scaffold.of(context).showSnackBar(snackSavedSettings);
+                  },
+                ),
+              ),
+            ),
+          // Check
+          ListTile(
+              contentPadding: EdgeInsets.all(4),
+              title: Text("Verificar Código de Barras"),
+              subtitle: Text("Checa se o código de barras e valido na 'Entrada Manual'"),
+              trailing: Container(
+                width: 84,
+                child: Checkbox(
+                  value: checkBarcode,
+                  onChanged: (bool value) {
+                    UserSettings settings = Home.of(context).settings;
+                    settings.checkBarcode = value;
+                    settings.save();
+                    setState(
+                      () {
+                        checkBarcode = value;
                       },
                     );
                     Scaffold.of(context).showSnackBar(snackSavedSettings);

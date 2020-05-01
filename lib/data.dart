@@ -12,17 +12,20 @@ class UserSettings {
   String exportPath;
   int minQuant;
   int maxQuant;
+  bool checkBarcode;
 
   UserSettings(
       {this.delimiter = ";",
       this.exportPath = 'estoq/sessions',
       this.minQuant = 1,
-      this.maxQuant = 10});
+      this.maxQuant = 10,
+      this.checkBarcode = true});
   UserSettings.fromMap(var map) {
     this.delimiter = map["delimiter"];
     this.exportPath = map["exportPath"];
     this.minQuant = map["minQuant"];
     this.maxQuant = map["maxQuant"];
+    this.checkBarcode = map["checkBarcode"];
   }
 
   set changeDelimiter(String value) {
@@ -45,6 +48,7 @@ class UserSettings {
         'exportPath': this.exportPath,
         'minQuant': this.minQuant,
         'maxQuant': this.maxQuant,
+        'checkBarcode': this.checkBarcode,
       };
       await store.record('settings').put(txn, map);
     });
@@ -54,7 +58,9 @@ class UserSettings {
     return """delimiter: $delimiter, \n
               exportPath: $exportPath, \n
               minQuant: $minQuant, \n
-              maxQuant: $maxQuant,""";
+              maxQuant: $maxQuant, \n
+              checkBarcoe: $checkBarcode
+              """;
   }
 
   Map toMap() {
@@ -63,6 +69,7 @@ class UserSettings {
       "exportPath": exportPath,
       "minQuant": minQuant,
       "maxQuant": maxQuant,
+      "checkBarcode": checkBarcode,
     };
   }
 }
