@@ -14,9 +14,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
 // TODO - wait flash support on flutter camera
-// Add option to weather check or not barcode - check
-// Add clear button on manual input - check
-// Add option to save reference or barcode
+// Add option to save reference or barcode,instead of only barcode
 
 String isBarcode(String barcode) {
   String checkLastDigit(String barcode) {

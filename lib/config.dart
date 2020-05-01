@@ -163,7 +163,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
               contentPadding: EdgeInsets.all(4),
               title: Text("Verificar Código de Barras"),
-              subtitle: Text("Checa se o código de barras e valido na 'Entrada Manual'"),
+              subtitle: Text("Checa se o código de barras é valido na 'Entrada Manual', de acordo com o padrão EAN13"),
               trailing: Container(
                 width: 84,
                 child: Checkbox(
