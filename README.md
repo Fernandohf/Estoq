@@ -3,7 +3,7 @@
 [![](https://img.shields.io/static/v1?label=Flutter&message=Estoq&color=blue&logo=flutter)](https://www.flutter.com/)
 [![GitHub issues](https://img.shields.io/github/issues/Fernandohf/Estoq)](https://github.com/Fernandohf/Estoq/issues)
 [![GitHub license](https://img.shields.io/github/license/Fernandohf/Estoq)](https://github.com/Fernandohf/Estoq/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://img.shields.io/github/release/Fernandohf/Estoq/releases/)
+[![GitHub beta version](https://img.shields.io/github/v/tag/Fernandohf/Estoq.svg)](https://github.com/Fernandohf/Estoq/releases)
 
 
 A simple app to control itens in inventory by scanning their barcode. Always make sure that your physical and digital inventory are in agreement. This project is powered by [Flutter](https://www.flutter.com).
