@@ -113,7 +113,7 @@ class DrawerHome extends StatelessWidget {
                           "${sessions.data.length} sessões foram exportadas"));
                   await sessions.exportAll(settings.delimiter);
                   Navigator.of(context).pop();
-                  Scaffold.of(context).showSnackBar(snackExport);
+                  ScaffoldMessenger.of(context).showSnackBar(snackExport);
                 },
               ),
               ListTile(
@@ -275,11 +275,11 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
           ButtonBar(
             alignment: MainAxisAlignment.end,
             children: <Widget>[
-              FlatButton(
+              TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text('Cancelar',
                       style: TextStyle(color: Colors.redAccent))),
-              FlatButton(
+              TextButton(
                   onPressed: () async {
                     Sessions sessions = Home.of(context).sessions;
                     // Create session
@@ -296,7 +296,7 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
                           ),
                           contentPadding: EdgeInsets.zero,
                           actions: <Widget>[
-                            FlatButton(
+                            TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
