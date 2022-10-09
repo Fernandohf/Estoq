@@ -6,7 +6,6 @@ import 'active_view.dart';
 import 'config.dart';
 // Session edit screen
 
-
 void navigateToSession(BuildContext context, sessionData) {
   if (Navigator.of(context).canPop()) {
     Navigator.of(context).pop();
@@ -31,30 +30,27 @@ void navigateToSession(BuildContext context, sessionData) {
   }));
 }
 
-
 void navigateToSettings(BuildContext context) {
   Navigator.of(context)
       .push(MaterialPageRoute<Null>(builder: (BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 1,
-        title: Text(
-          "Configurações",
-          style: TextStyle(
-            fontSize: 25,
-            color: Colors.white,
+        appBar: AppBar(
+          elevation: 1,
+          title: Text(
+            "Configurações",
+            style: TextStyle(
+              fontSize: 25,
+              color: Colors.white,
+            ),
           ),
+          // centerTitle: true,
+          backgroundColor: Colors.blueAccent,
         ),
-        // centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: SettingsScreen()
-    );
+        body: SettingsScreen());
   }));
 }
 
-
-Future<void> navigateToActiveSession(BuildContext context, sessionData) async{
+Future<void> navigateToActiveSession(BuildContext context, sessionData) async {
   CameraDescription camera = await getCamera();
   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
     return ActiveSessionScreen(sessionData, camera);

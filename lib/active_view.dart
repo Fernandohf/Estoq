@@ -134,7 +134,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                         "*Verifique se a image esta em foco.",
                         textAlign: TextAlign.end,
                       ),
-                      FlatButton(
+                      TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -199,7 +199,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
       SnackBar snackEntry = SnackBar(
           duration: Duration(milliseconds: 400),
           content: Text("Adicionado com sucesso!"));
-      Scaffold.of(context).showSnackBar(snackEntry);
+      ScaffoldMessenger.of(context).showSnackBar(snackEntry);
 
       // Log
       print("Adicionando entry");
@@ -459,7 +459,7 @@ class _BarcodeScannerState extends State {
                 Positioned.fill(
                     child: Align(
                   alignment: Alignment.bottomRight,
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       setState(() {
                         if (torchOn) {
@@ -591,13 +591,12 @@ class _ManualInputFormState extends State<ManualInputForm> {
       autofocus: true,
       maxLines: null,
       maxLength: 13,
-      inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (String value) {
         this.submittedFunction(context);
       },
-      autovalidate: true,
       validator: (String value) {
         return settings.checkBarcode ? isBarcode(value) : null;
       },

@@ -20,7 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   SnackBar snackSavedSettings = SnackBar(
       duration: Duration(milliseconds: 800),
       content: Text("Configurações salvas!"));
-  
+
   String minInputValidator(String value) {
     if (value == "")
       return "Valor inválido";
@@ -96,7 +96,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       setState(() {
                         delimiter = v;
                       });
-                      Scaffold.of(context).showSnackBar(snackSavedSettings);
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(snackSavedSettings);
                     }),
               ),
             ),
@@ -111,9 +112,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   controller: minController,
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    WhitelistingTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly
                   ],
-                  autovalidate: true,
                   validator: minInputValidator,
                   onEditingComplete: () {
                     UserSettings settings = Home.of(context).settings;
@@ -124,7 +124,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         minQuant = settings.minQuant;
                       },
                     );
-                    Scaffold.of(context).showSnackBar(snackSavedSettings);
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(snackSavedSettings);
                   },
                 ),
               ),
@@ -140,10 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   controller: maxController,
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    WhitelistingTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly
                   ],
                   decoration: InputDecoration(),
-                  autovalidate: true,
                   validator: maxInputValidator,
                   onEditingComplete: () {
                     UserSettings settings = Home.of(context).settings;
@@ -154,16 +154,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         maxQuant = settings.maxQuant;
                       },
                     );
-                    Scaffold.of(context).showSnackBar(snackSavedSettings);
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(snackSavedSettings);
                   },
                 ),
               ),
             ),
-          // Check
-          ListTile(
+            // Check
+            ListTile(
               contentPadding: EdgeInsets.all(4),
               title: Text("Verificar Código de Barras"),
-              subtitle: Text("Checa se o código de barras é valido na 'Entrada Manual', de acordo com o padrão EAN13"),
+              subtitle: Text(
+                  "Checa se o código de barras é valido na 'Entrada Manual', de acordo com o padrão EAN13"),
               trailing: Container(
                 width: 84,
                 child: Checkbox(
@@ -177,7 +179,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         checkBarcode = value;
                       },
                     );
-                    Scaffold.of(context).showSnackBar(snackSavedSettings);
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(snackSavedSettings);
                   },
                 ),
               ),

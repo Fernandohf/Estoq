@@ -20,41 +20,43 @@ class SessionScreen extends StatelessWidget {
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   showDialog(
                       context: context,
-                      child: AlertDialog(
-                        title: Text("Realmente quer remover a sessão?"),
-                        actions: <Widget>[
-                          FlatButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                "Não",
-                                style: TextStyle(color: Colors.redAccent),
-                              )),
-                          FlatButton(
-                              onPressed: () async {
-                                Sessions sessions = Home.of(context).sessions;
-                                await sessions.remove(sessionData);
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                "Sim",
-                                style: TextStyle(color: Colors.blueAccent),
-                              )),
-                        ],
-                      ));
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Realmente quer remover a sessão?"),
+                          actions: <Widget>[
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  "Não",
+                                  style: TextStyle(color: Colors.redAccent),
+                                )),
+                            TextButton(
+                                onPressed: () async {
+                                  Sessions sessions = Home.of(context).sessions;
+                                  await sessions.remove(sessionData);
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  "Sim",
+                                  style: TextStyle(color: Colors.blueAccent),
+                                )),
+                          ],
+                        );
+                      });
                 },
                 child: Icon(
                   Icons.delete,
                   color: Colors.redAccent,
                 ),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () async {
                   UserSettings settings = Home.of(context).settings;
                   String filePath =
@@ -68,7 +70,7 @@ class SessionScreen extends StatelessWidget {
                 },
                 child: Icon(Icons.share, color: Colors.blueAccent),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () async {
                   UserSettings settings = Home.of(context).settings;
                   await sessionData.export(settings.delimiter);
@@ -76,11 +78,11 @@ class SessionScreen extends StatelessWidget {
                   SnackBar snackExport = SnackBar(
                       duration: Duration(seconds: 2),
                       content: Text("${sessionData.name} foi exportada"));
-                  Scaffold.of(context).showSnackBar(snackExport);
+                  ScaffoldMessenger.of(context).showSnackBar(snackExport);
                 },
                 child: Icon(Icons.arrow_upward, color: Colors.blueAccent),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   navigateToActiveSession(context, sessionData);
                 }, // append to entry
@@ -127,7 +129,7 @@ class _SessionCardState extends State<SessionCard> {
               sessionData.removeEntry(index);
             });
 
-            Scaffold.of(context).showSnackBar(SnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 duration: Duration(milliseconds: 500),
                 content: Text(
                     "(${entry["barcode"]}, ${entry["quantity"]}) dismissed")));
