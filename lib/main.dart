@@ -23,10 +23,11 @@ class Home extends InheritedWidget {
   final Widget child;
   final UserSettings settings;
   final Sessions sessions;
-  Home({this.child, this.settings, this.sessions}) : super(child: child);
+  Home({required this.child, required this.settings, required this.sessions})
+      : super(child: child);
 
-  static Home of(BuildContext context) {
-    return (context.dependOnInheritedWidgetOfExactType());
+  static Home? of(BuildContext context) {
+    return (context.dependOnInheritedWidgetOfExactType<Home>());
   }
 
   @override

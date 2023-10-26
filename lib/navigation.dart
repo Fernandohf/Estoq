@@ -3,7 +3,7 @@ import 'package:estoq/config.dart';
 import 'package:flutter/material.dart';
 import 'session_view.dart';
 import 'active_view.dart';
-import 'config.dart';
+
 // Session edit screen
 
 void navigateToSession(BuildContext context, sessionData) {
