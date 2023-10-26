@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'data.dart';
-import 'package:flutter_camera_ml_vision/flutter_camera_ml_vision.dart';
-import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'dart:io';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
@@ -12,7 +11,6 @@ import 'package:flutter_native_image/flutter_native_image.dart';
 import 'main.dart';
 
 // Features
-// TODO - wait flash support on flutter camera
 // Add option to save reference or barcode,instead of only barcode
 
 String? isBarcode(String barcode) {
@@ -69,13 +67,13 @@ class ActiveSessionScreen extends StatefulWidget {
 
   @override
   _ActiveSessionScreenState createState() =>
-      _ActiveSessionScreenState(sessionData, camera);
+      _ActiveSessionScreenState(sessionData: sessionData, camera: camera);
 }
 
 class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     with SingleTickerProviderStateMixin {
   final CameraDescription camera;
-  late SessionData sessionData;
+  final SessionData sessionData;
   late String lastBarcode = "";
   late int sliderValue;
   late int activeTab = 0;
@@ -87,8 +85,12 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   late double previewHeight = 160;
   late int borderTB = 30;
   late int borderLR = 0;
+  _ActiveSessionScreenState({
+    required this.camera,
+    required this.sessionData,
+  });
+
   // Add configuration to differenret formats
-  static final barcodeDetectorOptions = BarcodeDetectorOptions();
 
   Future<void> addEntry(BuildContext context) async {
     // Check if camera is active
@@ -108,12 +110,17 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
         await _camController.takePicture();
         Size previewSize =
             Size(previewWidth - 2 * borderLR, previewHeight - 2 * borderTB);
-        File imgFie = await resizeToPreview(path, previewSize);
+        File imgFile = await resizeToPreview(path, previewSize);
         // String newPath = await _resizePhoto(
         //     path, borderLR, borderTB, imgSize);
 
-        final image = FirebaseVisionImage.fromFile(imgFie);
-        List<Barcode> results = await barcodeDectector.detectInImage(image);
+        // final image = FirebaseVisionImage.fromFile(imgFile);
+        final InputImage image = InputImage.fromFile(imgFile);
+
+        final barcodeScanner = BarcodeScanner(formats: [BarcodeFormat.all]);
+        // List<Barcode> results = await barcodeDectector.detectInImage(image);
+        final List<Barcode> results = await barcodeScanner.processImage(image);
+
         if (results.isEmpty) {
           showDialog(
               context: context,
@@ -128,7 +135,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                     ),
                     titlePadding: EdgeInsets.all(5),
                     actions: <Widget>[
-                      Image.file(imgFie),
+                      Image.file(imgFile),
                       Text(
                         "*Verifique se a image esta em foco.",
                         textAlign: TextAlign.end,
@@ -210,10 +217,6 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     }
   }
 
-  final barcodeDectector =
-      FirebaseVision.instance.barcodeDetector(barcodeDetectorOptions);
-  _ActiveSessionScreenState(this.sessionData, this.camera);
-
   void updateSize(double width) {
     this.previewWidth = width;
   }
@@ -226,7 +229,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
   void initState() {
     super.initState();
     _textEditingController = TextEditingController();
-    _camController = CameraController(camera, ResolutionPreset.high);
+    _camController = CameraController(camera, ResolutionPreset.high,
+        imageFormatGroup: ImageFormatGroup.nv21);
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
@@ -269,7 +273,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    BarcodeScanner(
+                    BarcodeScannerWidget(
                         camera,
                         _camController,
                         _initializeControllerFuture,
@@ -355,7 +359,7 @@ class AddButton extends StatelessWidget {
   }
 }
 
-class BarcodeScanner extends StatefulWidget {
+class BarcodeScannerWidget extends StatefulWidget {
   final CameraDescription camera;
   final CameraController cameraController;
   final Future<void> _initializeControllerFuture;
@@ -363,7 +367,7 @@ class BarcodeScanner extends StatefulWidget {
   final int borderTB;
   final int borderLR;
 
-  BarcodeScanner(
+  BarcodeScannerWidget(
       this.camera,
       this.cameraController,
       this._initializeControllerFuture,
@@ -372,13 +376,13 @@ class BarcodeScanner extends StatefulWidget {
       this.borderTB);
 
   @override
-  _BarcodeScannerState createState() {
-    return _BarcodeScannerState(camera, cameraController,
+  _BarcodeScannerWidgetState createState() {
+    return _BarcodeScannerWidgetState(camera, cameraController,
         _initializeControllerFuture, updateSize, borderLR, borderTB);
   }
 }
 
-class _BarcodeScannerState extends State {
+class _BarcodeScannerWidgetState extends State {
   CameraController _controller;
   Future<void> _initializeControllerFuture;
   late Function barcodeCallback;
@@ -388,7 +392,7 @@ class _BarcodeScannerState extends State {
   final int borderLR;
   IconData torchIcon = Icons.highlight;
   bool torchOn = false;
-  _BarcodeScannerState(
+  _BarcodeScannerWidgetState(
       this.camera,
       this._controller,
       this._initializeControllerFuture,
@@ -465,12 +469,12 @@ class _BarcodeScannerState extends State {
                         if (torchOn) {
                           torchIcon = Icons.highlight_off;
                           torchOn = false;
-                          // _controller.flash(torchOn);
+                          _controller.setFlashMode(FlashMode.torch);
                           // Turn the torch on:
                         } else {
                           torchIcon = Icons.highlight;
                           torchOn = true;
-                          // _controller.flash(torchOn);
+                          _controller.setFlashMode(FlashMode.off);
                         }
                       });
                     },
