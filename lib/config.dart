@@ -4,25 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SettingsScreen extends StatefulWidget {
-  SettingsScreen({Key key}) : super(key: key);
+  SettingsScreen({Key? key}) : super(key: key);
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String delimiter;
-  int minQuant;
-  int maxQuant;
-  bool checkBarcode;
+  late String delimiter;
+  late int minQuant;
+  late int maxQuant;
+  late bool checkBarcode;
   TextEditingController minController = TextEditingController();
   TextEditingController maxController = TextEditingController();
   SnackBar snackSavedSettings = SnackBar(
       duration: Duration(milliseconds: 800),
       content: Text("Configurações salvas!"));
 
-  String minInputValidator(String value) {
-    if (value == "")
+  String? minInputValidator(String? value) {
+    if ((value == "") || (value == null))
       return "Valor inválido";
     else if (int.parse(value) >= maxQuant) {
       return "Esse valor deve ser menor que o máximo";
@@ -30,8 +30,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return null;
   }
 
-  String maxInputValidator(String value) {
-    if (value == "")
+  String? maxInputValidator(String? value) {
+    if ((value == "") || ((value == null)))
       return "Valor inválido";
     else if (int.parse(value) <= minQuant) {
       return "Esse valor deve ser maior que o mínimo";
@@ -41,7 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    UserSettings settings = Home.of(context).settings;
+    UserSettings settings = Home.of(context)!.settings;
     delimiter = settings.delimiter;
     minController.text = settings.minQuant.toString();
     maxController.text = settings.maxQuant.toString();
@@ -89,13 +89,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         key: UniqueKey(),
                       ),
                     ],
-                    onChanged: (String v) {
-                      UserSettings settings = Home.of(context).settings;
-                      settings.delimiter = v;
-                      settings.save();
-                      setState(() {
-                        delimiter = v;
-                      });
+                    onChanged: (String? v) {
+                      UserSettings settings = Home.of(context)!.settings;
+                      if (v != null) {
+                        settings.delimiter = v;
+                        settings.save();
+                        setState(() {
+                          delimiter = v;
+                        });
+                      }
                       ScaffoldMessenger.of(context)
                           .showSnackBar(snackSavedSettings);
                     }),
@@ -116,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                   validator: minInputValidator,
                   onEditingComplete: () {
-                    UserSettings settings = Home.of(context).settings;
+                    UserSettings settings = Home.of(context)!.settings;
                     settings.minQuant = int.parse(minController.text);
                     settings.save();
                     setState(
@@ -146,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   decoration: InputDecoration(),
                   validator: maxInputValidator,
                   onEditingComplete: () {
-                    UserSettings settings = Home.of(context).settings;
+                    UserSettings settings = Home.of(context)!.settings;
                     settings.maxQuant = int.parse(maxController.text);
                     settings.save();
                     setState(
@@ -170,15 +172,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 84,
                 child: Checkbox(
                   value: checkBarcode,
-                  onChanged: (bool value) {
-                    UserSettings settings = Home.of(context).settings;
-                    settings.checkBarcode = value;
-                    settings.save();
-                    setState(
-                      () {
-                        checkBarcode = value;
-                      },
-                    );
+                  onChanged: (bool? value) {
+                    UserSettings settings = Home.of(context)!.settings;
+                    if (value != null) {
+                      settings.checkBarcode = value;
+                      settings.save();
+                      setState(
+                        () {
+                          checkBarcode = value;
+                        },
+                      );
+                    }
                     ScaffoldMessenger.of(context)
                         .showSnackBar(snackSavedSettings);
                   },

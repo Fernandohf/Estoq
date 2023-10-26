@@ -8,11 +8,11 @@ import 'dart:io';
 
 // Settings options class
 class UserSettings {
-  String delimiter;
-  String exportPath;
-  int minQuant;
-  int maxQuant;
-  bool checkBarcode;
+  late String delimiter;
+  late String exportPath;
+  late int minQuant;
+  late int maxQuant;
+  late bool checkBarcode;
 
   UserSettings(
       {this.delimiter = ";",
@@ -76,10 +76,10 @@ class UserSettings {
 
 // Session data class
 class SessionData {
-  String name;
-  List<Map<String, Object>> entries = [];
-  Key key;
-  DateTime date = DateTime.now();
+  late String name;
+  late List<Map<String, Object>> entries = [];
+  late Key key;
+  late DateTime date = DateTime.now();
 
   SessionData.empty(String name) {
     this.name = name;
@@ -97,7 +97,7 @@ class SessionData {
   List<String> get barcodes {
     List<String> _barcodes = [];
     for (final value in this.entries) {
-      _barcodes.add(value["barcode"]);
+      _barcodes.add(value["barcode"] as String);
     }
     return _barcodes;
   }
@@ -105,7 +105,7 @@ class SessionData {
   List<int> get quantities {
     List<int> _quantities = [];
     for (final value in this.entries) {
-      _quantities.add(value["quantity"]);
+      _quantities.add(value["quantity"] as int);
     }
     return _quantities;
   }
@@ -130,9 +130,9 @@ class SessionData {
     });
   }
 
-  Future<String> export(String delimiter) async {
+  Future<String?> export(String delimiter) async {
     final directory = await getExternalStorageDirectory();
-    final exportDir = await Directory('${directory.path}/Estoq/').create();
+    final exportDir = await Directory('${directory!.path}/Estoq/').create();
     final file = File(exportDir.path + '${this.name}.txt');
     String content = "";
     for (final Map<String, Object> entry in this.entries) {
@@ -170,7 +170,7 @@ class Sessions {
 
   String lastSession() {
     // Return last recorded session
-    DateTime date;
+    DateTime? date;
     for (final sessData in this.data.values) {
       if (date == null) {
         date = sessData.date;
@@ -178,14 +178,14 @@ class Sessions {
         date = sessData.date;
       }
     }
-    return "${date?.year?.toString()}-${date?.month?.toString()?.padLeft(2, '0')}-${date?.day?.toString()?.padLeft(2, '0')}";
+    return "${date?.year.toString()}-${date?.month.toString().padLeft(2, '0')}-${date?.day.toString().padLeft(2, '0')}";
   }
 
   int totalItens() {
     int itens = 0;
     for (final sessData in this.data.values) {
       for (final entry in sessData.entries) {
-        itens += entry["quantity"];
+        itens += entry["quantity"] as int;
       }
     }
     return itens;
@@ -198,19 +198,19 @@ class Sessions {
     var results = await sessionStore.find(db, finder: finder);
     Map<String, SessionData> sessions = {};
     for (final map in results) {
-      sessions[map.key] = SessionData.fromRecordSnapShot(map);
+      sessions[map.key as String] = SessionData.fromRecordSnapShot(map);
     }
     this.data = sessions;
   }
 
   Future<void> remove(SessionData session) async {
-    await this.data[session.key.toString()].delete();
+    await this.data[session.key.toString()]!.delete();
     this.data.remove(session.key.toString());
   }
 
   void add(SessionData session) {
     this.data[session.key.toString()] = session;
-    this.data[session.key.toString()].save();
+    this.data[session.key.toString()]!.save();
   }
 
   void saveAll() {
@@ -226,13 +226,13 @@ class Sessions {
   }
 
   void addEntry(SessionData session, Map<String, Object> entry) {
-    this.data[session.key.toString()].entries.add(entry);
-    this.data[session.key.toString()].save();
+    this.data[session.key.toString()]!.entries.add(entry);
+    this.data[session.key.toString()]!.save();
   }
 
   void removeEntryAt(SessionData session, int index) {
-    this.data[session.key.toString()].entries.removeAt(index);
-    this.data[session.key.toString()].save();
+    this.data[session.key.toString()]!.entries.removeAt(index);
+    this.data[session.key.toString()]!.save();
   }
 
   void deleteAll() async {
@@ -262,7 +262,8 @@ Future<UserSettings> loadUserSettings() async {
   Database db = await getDb();
   var store = StoreRef.main();
 
-  var results = await store.record('settings').get(db) as Map<String, Object>;
+  Map<String, Object>? results =
+      await store.record('settings').get(db) as Map<String, Object>?;
 
   // Only singletons
   if (results == null) {

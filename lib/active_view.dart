@@ -10,13 +10,12 @@ import 'package:path_provider/path_provider.dart';
 import 'session_view.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'main.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 // Features
 // TODO - wait flash support on flutter camera
 // Add option to save reference or barcode,instead of only barcode
 
-String isBarcode(String barcode) {
+String? isBarcode(String barcode) {
   String checkLastDigit(String barcode) {
     // EAN13 pattern
     int sum1 = 0;
@@ -76,18 +75,18 @@ class ActiveSessionScreen extends StatefulWidget {
 class _ActiveSessionScreenState extends State<ActiveSessionScreen>
     with SingleTickerProviderStateMixin {
   final CameraDescription camera;
-  SessionData sessionData;
-  String lastBarcode = "";
-  int sliderValue;
-  int activeTab = 0;
-  CameraController _camController;
-  TabController _tabController;
-  TextEditingController _textEditingController;
-  Future<void> _initializeControllerFuture;
-  double previewWidth;
-  double previewHeight = 160;
-  int borderTB = 30;
-  int borderLR = 0;
+  late SessionData sessionData;
+  late String lastBarcode = "";
+  late int sliderValue;
+  late int activeTab = 0;
+  late CameraController _camController;
+  late TabController _tabController;
+  late TextEditingController _textEditingController;
+  late Future<void> _initializeControllerFuture;
+  late double previewWidth;
+  late double previewHeight = 160;
+  late int borderTB = 30;
+  late int borderLR = 0;
   // Add configuration to differenret formats
   static final barcodeDetectorOptions = BarcodeDetectorOptions();
 
@@ -106,7 +105,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
         );
 
         // Attempt to take a picture and log where it's been saved.
-        await _camController.takePicture(path);
+        await _camController.takePicture();
         Size previewSize =
             Size(previewWidth - 2 * borderLR, previewHeight - 2 * borderTB);
         File imgFie = await resizeToPreview(path, previewSize);
@@ -143,7 +142,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
                   ));
           lastBarcode = "";
         } else {
-          lastBarcode = results.first.rawValue;
+          lastBarcode = results.first.rawValue ?? "";
         }
       } catch (e) {
         // If an error occurs, log the error to the console.
@@ -193,7 +192,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen>
         "barcode": this.lastBarcode,
         "quantity": this.sliderValue.toInt()
       };
-      Sessions sessions = Home.of(context).sessions;
+      Sessions sessions = Home.of(context)!.sessions;
       sessions.addEntry(sessionData, entry);
       // Inform user and save it
       SnackBar snackEntry = SnackBar(
@@ -311,18 +310,19 @@ Future<File> resizeToPreview(String filePath, Size previewSize) async {
   int xDelta;
   int yDelta;
   // Portrait or Landscape
-  if (properties.height > properties.width) {
-    ratio = properties.width / previewSize.width;
+
+  if (properties.height! > properties.width!) {
+    ratio = properties.width! / previewSize.width;
     scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
-    yOff = ((properties.height - scaledSize.height) / 2).round();
-    xOff = ((properties.width - scaledSize.width) / 2).round();
+    yOff = ((properties.height! - scaledSize.height) / 2).round();
+    xOff = ((properties.width! - scaledSize.width) / 2).round();
     xDelta = scaledSize.width.round();
     yDelta = scaledSize.height.round();
   } else {
-    ratio = properties.height / previewSize.width;
+    ratio = properties.height! / previewSize.width;
     scaledSize = Size(previewSize.width * ratio, previewSize.height * ratio);
-    xOff = ((properties.width - scaledSize.height) / 2).round();
-    yOff = ((properties.height - scaledSize.width) / 2).round();
+    xOff = ((properties.width! - scaledSize.height) / 2).round();
+    yOff = ((properties.height! - scaledSize.width) / 2).round();
     xDelta = scaledSize.height.round();
     yDelta = scaledSize.width.round();
   }
@@ -335,7 +335,7 @@ Future<File> resizeToPreview(String filePath, Size previewSize) async {
 
 class AddButton extends StatelessWidget {
   final Function addFunction;
-  const AddButton(this.addFunction, {Key key}) : super(key: key);
+  const AddButton(this.addFunction, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -346,7 +346,7 @@ class AddButton extends StatelessWidget {
           this.addFunction(context);
         },
         child: Icon(
-          Ionicons.md_barcode,
+          Icons.qr_code_2,
           color: Colors.white,
         ),
         backgroundColor: Colors.blueAccent,
@@ -381,7 +381,7 @@ class BarcodeScanner extends StatefulWidget {
 class _BarcodeScannerState extends State {
   CameraController _controller;
   Future<void> _initializeControllerFuture;
-  Function barcodeCallback;
+  late Function barcodeCallback;
   final CameraDescription camera;
   final Function updateSize;
   final int borderTB;
@@ -490,7 +490,7 @@ class _BarcodeScannerState extends State {
 }
 
 class BottonSlider extends StatefulWidget {
-  final Function valueCallback;
+  late final Function valueCallback;
   BottonSlider(this.valueCallback);
   @override
   _BottonSliderState createState() {
@@ -500,12 +500,12 @@ class BottonSlider extends StatefulWidget {
 
 class _BottonSliderState extends State {
   Function valueCallback;
-  int _value;
+  int? _value;
   _BottonSliderState(this.valueCallback);
 
   @override
   Widget build(BuildContext context) {
-    UserSettings settings = Home.of(context).settings;
+    UserSettings settings = Home.of(context)!.settings;
     if (_value == null) {
       _value = settings.minQuant;
     }
@@ -530,7 +530,7 @@ class _BottonSliderState extends State {
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                         child: Center(
                           child: Icon(
-                            Octicons.x,
+                            Icons.close,
                             size: 14.0,
                             color: Colors.blueAccent,
                           ),
@@ -539,13 +539,13 @@ class _BottonSliderState extends State {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8.0, 8, 0, 8),
                         child: Icon(
-                          Entypo.box,
+                          Icons.add_box,
                           color: Colors.blueAccent,
                         ),
                       ),
                       Expanded(
                         child: Slider(
-                            value: _value.toDouble(),
+                            value: _value!.toDouble(),
                             min: settings.minQuant.toDouble(),
                             max: settings.maxQuant.toDouble(),
                             divisions: settings.maxQuant - settings.minQuant,
@@ -586,7 +586,7 @@ class _ManualInputFormState extends State<ManualInputForm> {
 
   @override
   Widget build(BuildContext context) {
-    UserSettings settings = Home.of(context).settings;
+    UserSettings settings = Home.of(context)!.settings;
     return TextFormField(
       autofocus: true,
       maxLines: null,
@@ -597,8 +597,8 @@ class _ManualInputFormState extends State<ManualInputForm> {
       onFieldSubmitted: (String value) {
         this.submittedFunction(context);
       },
-      validator: (String value) {
-        return settings.checkBarcode ? isBarcode(value) : null;
+      validator: (String? value) {
+        return settings.checkBarcode ? isBarcode(value!) : null;
       },
 
       //onFieldSubmitted: (String value){this.submittedFunction(context);},

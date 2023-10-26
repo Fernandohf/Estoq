@@ -27,11 +27,11 @@ class HomeScreen extends StatelessWidget {
 }
 
 class DrawerHome extends StatelessWidget {
-  const DrawerHome({Key key}) : super(key: key);
+  const DrawerHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Sessions sessions = Home.of(context).sessions;
+    Sessions sessions = Home.of(context)!.sessions;
     return Container(
       child: Drawer(
         child: SafeArea(
@@ -105,8 +105,8 @@ class DrawerHome extends StatelessWidget {
                 leading: Icon(Icons.arrow_upward),
                 title: Text('Exportar'),
                 onTap: () async {
-                  Sessions sessions = Home.of(context).sessions;
-                  UserSettings settings = Home.of(context).settings;
+                  Sessions sessions = Home.of(context)!.sessions;
+                  UserSettings settings = Home.of(context)!.settings;
                   SnackBar snackExport = SnackBar(
                       duration: Duration(seconds: 2),
                       content: Text(
@@ -137,11 +137,11 @@ class SessionsBuilder extends StatefulWidget {
 }
 
 class _SessionsBuilderState extends State<SessionsBuilder> {
-  Sessions sessions;
+  late Sessions sessions;
 
   @override
   Widget build(BuildContext context) {
-    sessions = Home.of(context).sessions;
+    sessions = Home.of(context)!.sessions;
     if (this.sessions.data.isEmpty) {
       return Center(
           child: Text(
@@ -252,7 +252,7 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    Sessions sessions = Home.of(context).sessions;
+    Sessions sessions = Home.of(context)!.sessions;
     formController.text = "Sessão_${sessions.data.length + 1}";
     return SimpleDialog(
         title: Text("Nova Sessão"),
@@ -281,7 +281,7 @@ class _NewSessionDialogState extends State<NewSessionDialog> {
                       style: TextStyle(color: Colors.redAccent))),
               TextButton(
                   onPressed: () async {
-                    Sessions sessions = Home.of(context).sessions;
+                    Sessions sessions = Home.of(context)!.sessions;
                     // Create session
                     SessionData newSession =
                         new SessionData.empty(formController.text);
@@ -335,7 +335,7 @@ class _LinkTextSpan extends TextSpan {
   // manage the recognizer from outside the TextSpan, e.g. in the State of a
   // stateful widget that then hands the recognizer to the TextSpan.
 
-  _LinkTextSpan({TextStyle style, String url, String text})
+  _LinkTextSpan({required TextStyle style, required String url, String? text})
       : super(
             style: style,
             text: text ?? url,

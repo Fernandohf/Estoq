@@ -38,7 +38,8 @@ class SessionScreen extends StatelessWidget {
                                 )),
                             TextButton(
                                 onPressed: () async {
-                                  Sessions sessions = Home.of(context).sessions;
+                                  Sessions sessions =
+                                      Home.of(context)!.sessions;
                                   await sessions.remove(sessionData);
                                   Navigator.pop(context);
                                   Navigator.pop(context);
@@ -58,13 +59,13 @@ class SessionScreen extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  UserSettings settings = Home.of(context).settings;
-                  String filePath =
+                  UserSettings settings = Home.of(context)!.settings;
+                  String? filePath =
                       await sessionData.export(settings.delimiter);
                   await FlutterShare.shareFile(
                     title: 'Compartilhe o arquivo exportado',
                     text: '${sessionData.name}.txt',
-                    filePath: filePath,
+                    filePath: filePath!,
                   );
                   print("Sharing text file $filePath");
                 },
@@ -72,7 +73,7 @@ class SessionScreen extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  UserSettings settings = Home.of(context).settings;
+                  UserSettings settings = Home.of(context)!.settings;
                   await sessionData.export(settings.delimiter);
                   print("Export this session");
                   SnackBar snackExport = SnackBar(
@@ -123,7 +124,7 @@ class _SessionCardState extends State<SessionCard> {
       return Dismissible(
           onDismissed: (DismissDirection direcion) {
             setState(() {
-              Sessions sessions = Home.of(context).sessions;
+              Sessions sessions = Home.of(context)!.sessions;
               // sessions.removeEntryAt(sessionData, index);
               print(sessions.data);
               sessionData.removeEntry(index);
@@ -191,7 +192,7 @@ class _SessionCardState extends State<SessionCard> {
 class CardText extends StatelessWidget {
   final String text;
   final int weight;
-  final TextAlign aligment;
+  final TextAlign? aligment;
   CardText(this.text, this.weight, {this.aligment});
 
   @override
