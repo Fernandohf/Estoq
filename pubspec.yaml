@@ -22,7 +22,6 @@ dependencies:
   shared_preferences:
   path_provider:
   path:
-  flutter_camera_ml_vision:
   firebase_ml_vision:
   sembast:
   flutter_native_image:
@@ -33,6 +32,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons:
   google_ml_kit:
+  google_mlkit_barcode_scanning: ^0.9.0
 
 dev_dependencies:
   flutter_test:
